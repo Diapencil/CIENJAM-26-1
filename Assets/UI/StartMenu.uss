@@ -1,0 +1,31 @@
+/*
+    StartMenu.uss
+    기능 : StartMenu.uxml 의 스타일. 루트를 투명하게 두어 3D 씬이 배경으로 보이게 하고,
+           메뉴 버튼들을 좌측 하단에 세로로 배치한다.
+    사용 : StartMenu.uxml 에서 class 로 참조된다.
+    주의 : 3D 배경이 보이려면 UIDocument 의 PanelSettings 에서 Clear Color 를 꺼야 한다(투명).
+*/
+
+.start-root {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* 좌측 하단 세로 버튼 묶음 */
+.menu-buttons {
+    position: absolute;
+    left: 48px;
+    bottom: 48px;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.menu-button {
+    width: 180px;
+    height: 52px;
+    margin-top: 10px;
+    font-size: 22px;
+    -unity-font-style: bold;
+}

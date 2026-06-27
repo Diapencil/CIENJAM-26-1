@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d555577cfa8a484ea440d1eb18c696d, type: 3}
+  m_Name: PlaySO
+  m_EditorClassIdentifier: Assembly-CSharp::SceneSO
+  targetSceneName: Play
+  useLoadingScene: 1
+  loadingSceneName: Loading
+  leastHoldingDuration: 5
+  enterTransition: 2
+  exitTransition: 1
+  transitionDuration: 0.5

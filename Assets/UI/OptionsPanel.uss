@@ -1,0 +1,60 @@
+/*
+    OptionsPanel.uss
+    기능 : OptionsPanel.uxml 의 스타일. 화면 전체 딤 배경과 중앙 옵션 패널, 슬라이더 행 레이아웃을 정의한다.
+    사용 : OptionsPanel.uxml 에서 class 로 참조된다. PanelSettings 의 Theme Style Sheet 또는
+           UXML <Style> 참조로 적용한다.
+*/
+
+/* 화면 전체를 덮는 딤 배경 (팝업 모달) */
+.options-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* 중앙 패널 */
+.options-panel {
+    width: 460px;
+    padding: 28px;
+    background-color: rgb(34, 34, 40);
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: rgb(70, 70, 80);
+}
+
+.options-title {
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    margin-bottom: 20px;
+}
+
+/* 라벨 + 슬라이더 한 줄 */
+.option-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.option-label {
+    width: 90px;
+    font-size: 18px;
+    color: rgb(220, 220, 225);
+}
+
+.option-slider {
+    flex-grow: 1;
+}
+
+.options-close-button {
+    margin-top: 18px;
+    height: 40px;
+    font-size: 18px;
+    -unity-font-style: bold;
+}

@@ -1,0 +1,33 @@
+<!--
+    OptionsPanel.uxml
+    기능 : 옵션 팝업 UI. 화면을 덮는 딤 배경 + 중앙 패널(볼륨 슬라이더 3종, 닫기 버튼)을 정의한다.
+           시작 화면과 인게임에서 공통으로 재사용하는 단위 자산이다.
+    사용 : VisualTreeAsset 으로 참조해 런타임에 CloneTree() 로 복제한 뒤,
+           OptionsPanelController(clonedRoot) 로 바인딩한다. (StartMenuController 참고)
+           요소 이름(options-overlay / slider-master / slider-sfx / slider-bgm / options-close)은
+           OptionsPanelController 의 상수와 일치해야 한다.
+-->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="options-overlay" class="options-overlay">
+        <ui:VisualElement name="options-panel" class="options-panel">
+            <ui:Label text="옵션" class="options-title" />
+
+            <ui:VisualElement class="option-row">
+                <ui:Label text="마스터" class="option-label" />
+                <ui:Slider name="slider-master" low-value="0" high-value="1" value="1" class="option-slider" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="option-row">
+                <ui:Label text="효과음" class="option-label" />
+                <ui:Slider name="slider-sfx" low-value="0" high-value="1" value="1" class="option-slider" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="option-row">
+                <ui:Label text="배경음" class="option-label" />
+                <ui:Slider name="slider-bgm" low-value="0" high-value="1" value="1" class="option-slider" />
+            </ui:VisualElement>
+
+            <ui:Button name="options-close" text="닫기" class="options-close-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
