@@ -64,8 +64,12 @@ public class CameraSystem : MonoBehaviour
     [Header("연출")]
     [Tooltip("촬영 순간 점등할 플래시 Light")]
     [SerializeField] private Light flashLight;
-    [Tooltip("플래시 라이트 점등 유지 시간(초)")]
-    [SerializeField] private float flashLightDuration = 0.08f;
+    [Tooltip("예비 플래시 점등 시간(초)")]
+    [SerializeField] private float firstFlashDuration = 0.3f;
+    [Tooltip("예비 플래시 후 실제 촬영 플래시까지 대기 시간(초)")]
+    [SerializeField] private float flashGapDuration = 0.2f;
+    [Tooltip("실제 촬영 플래시 점등 시간(초)")]
+    [SerializeField] private float secondFlashDuration = 0.05f;
 
     // ── 상태 ───────────────────────────────────────────────
     private int _normalSlots;
@@ -113,6 +117,11 @@ public class CameraSystem : MonoBehaviour
             UserInput.Instance.RemoveMouseListener(MouseButton.Left, KeyPhase.Down, OnLeftDown);
             UserInput.Instance.RemoveMouseListener(MouseButton.Left, KeyPhase.Up, OnLeftUp);
         }
+
+        StopAllCoroutines();
+        SetFlashLight(false);
+        _charging = false;
+        _isFlashing = false;
     }
 
     // ── 입력 처리 ───────────────────────────────────────────
@@ -167,9 +176,14 @@ public class CameraSystem : MonoBehaviour
     {
         _isFlashing = true;
 
-        if (flashLight != null) flashLight.enabled = true;
-        yield return null; // 라이트 적용된 프레임으로 렌더되도록 1프레임 대기
+        SetFlashLight(true);
+        yield return new WaitForSeconds(Mathf.Max(0f, firstFlashDuration));
 
+        SetFlashLight(false);
+        yield return new WaitForSeconds(Mathf.Max(0f, flashGapDuration));
+
+        SetFlashLight(true);
+        yield return null; // 라이트 적용된 프레임으로 렌더되도록 1프레임 대기
         CapturePhoto();          // 플래시로 밝아진 장면을 사진으로 저장
         StunTargetInView(range, stunDuration); // 스턴 대상만 감지
 
@@ -179,10 +193,15 @@ public class CameraSystem : MonoBehaviour
             : transform.position;
         OnFlashFired?.Invoke(flashPos, range);
 
-        yield return new WaitForSeconds(flashLightDuration);
-        if (flashLight != null) flashLight.enabled = false;
+        yield return new WaitForSeconds(Mathf.Max(0f, secondFlashDuration));
+        SetFlashLight(false);
 
         _isFlashing = false;
+    }
+
+    private void SetFlashLight(bool enabled)
+    {
+        if (flashLight != null) flashLight.enabled = enabled;
     }
 
     // ── 촬영(캡처) ──────────────────────────────────────────

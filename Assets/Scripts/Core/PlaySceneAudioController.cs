@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,6 +39,7 @@ public class PlaySceneAudioController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float puangStunVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float puangStunBoostVolume = 0.5f;
     [SerializeField, Range(0f, 1f)] private float puangStunReleaseVolume = 0.7f;
+    [SerializeField] private float puangStunSoundDelay = 0.3f;
     [SerializeField] private float puangAmbientGap = 2f;
 
     [Header("Horror Cue")]
@@ -58,6 +60,7 @@ public class PlaySceneAudioController : MonoBehaviour
         public float nextAmbientPlayTime;
         public float stunReleaseOnlyUntil;
         public PuangAI.PuangState currentState = PuangAI.PuangState.Idle;
+        public Coroutine stunDelayRoutine;
     }
 
     private readonly Dictionary<PuangAI, PuangAmbientState> _puangAmbientStates = new();
@@ -339,6 +342,7 @@ public class PlaySceneAudioController : MonoBehaviour
     private void PlayPuangStun(PuangAI puang, PuangAmbientState state)
     {
         StopPuangAmbient(state);
+        StopPuangStunDelay(state);
         StopPuangSound(state.stunId);
         StopPuangSound(state.stunBoostId);
         StopPuangSound(state.stunReleaseId);
@@ -347,13 +351,27 @@ public class PlaySceneAudioController : MonoBehaviour
         state.stunReleaseId = -1;
         state.stunReleaseOnlyUntil = 0f;
 
-        if (!IsPuangAudible(puang)) return;
+        state.stunDelayRoutine = StartCoroutine(PlayPuangStunDelayed(puang, state));
+    }
+
+    private IEnumerator PlayPuangStunDelayed(PuangAI puang, PuangAmbientState state)
+    {
+        yield return new WaitForSeconds(Mathf.Max(0f, puangStunSoundDelay));
+
+        if (state != null)
+            state.stunDelayRoutine = null;
+
+        if (_audio == null) yield break;
+        if (puang == null || state == null || state.currentState != PuangAI.PuangState.Stun) yield break;
+        if (!IsPuangAudible(puang)) yield break;
+
         state.stunId = _audio.PlaySound(puangStunName, puang.transform, puangStunVolume);
         state.stunBoostId = _audio.PlaySound(puangStunName, puang.transform, puangStunBoostVolume);
     }
 
     private void PlayPuangStunRelease(PuangAI puang, PuangAmbientState state)
     {
+        StopPuangStunDelay(state);
         StopPuangSound(state.stunId);
         StopPuangSound(state.stunBoostId);
         StopPuangSound(state.stunReleaseId);
@@ -377,6 +395,13 @@ public class PlaySceneAudioController : MonoBehaviour
     {
         if (_audio == null || id < 0) return;
         _audio.StopSound(id);
+    }
+
+    private void StopPuangStunDelay(PuangAmbientState state)
+    {
+        if (state?.stunDelayRoutine == null) return;
+        StopCoroutine(state.stunDelayRoutine);
+        state.stunDelayRoutine = null;
     }
 
     private void PlayHorrorKick()
@@ -419,6 +444,7 @@ public class PlaySceneAudioController : MonoBehaviour
         foreach (var state in _puangAmbientStates.Values)
         {
             StopPuangAmbient(state);
+            StopPuangStunDelay(state);
             StopPuangSound(state.stunId);
             StopPuangSound(state.stunBoostId);
             StopPuangSound(state.stunReleaseId);
