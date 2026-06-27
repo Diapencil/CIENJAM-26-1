@@ -22,6 +22,10 @@ public class Player_Ctrl : MonoBehaviour
     float v;
     float runRatio;
     float currentSpeed;
+    bool isRunning;
+
+    public bool HasMoveInput => h != 0f || v != 0f;
+    public bool IsRunning => isRunning;
     
     [Header("Stamina")]
     public float stamina;
@@ -141,6 +145,7 @@ public class Player_Ctrl : MonoBehaviour
         //Debug.Log(stamina);
         bool wantsRun = canTryRun && Input.GetKey(KeyCode.LeftShift) && (h != 0f || v != 0f);
         bool canRun = wantsRun && !exhausted && stamina > 0f;
+        isRunning = canRun;
 
         if (canRun)
         {
@@ -152,6 +157,7 @@ public class Player_Ctrl : MonoBehaviour
             {
                 stamina = 0f;
                 exhausted = true;
+                isRunning = false;
             }
         }
         else
