@@ -101,6 +101,7 @@ public class PuangAI : MonoBehaviour, IStunTarget
     public PuangState State => _state;
 
     private NavMeshAgent _agent;
+    private Rigidbody _rigidbody;
     private PuangState _state = PuangState.Idle;
     private NavMeshPath _wanderPath;   // Wander 도달성 검사용 경로 버퍼(매번 new 방지, GC 절감)
 
@@ -120,6 +121,7 @@ public class PuangAI : MonoBehaviour, IStunTarget
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
+        _rigidbody = GetComponent<Rigidbody>();
         _wanderPath = new NavMeshPath();
         _agent.acceleration = acceleration;
         _agent.angularSpeed = angularSpeed;
@@ -329,11 +331,13 @@ public class PuangAI : MonoBehaviour, IStunTarget
         if (Time.time < _invincibleUntil) return; // 무적 프레임 중 재피격 무시
         SetState(PuangState.Stun);
         StopAgent();
+        StopPhysics();
         _stateTimer = duration;
     }
 
     private void TickStun()
     {
+        StopPhysics();
         _stateTimer -= Time.deltaTime;
         if (_stateTimer <= 0f)
         {
@@ -366,7 +370,15 @@ public class PuangAI : MonoBehaviour, IStunTarget
     {
         if (!_agent.isOnNavMesh) return;
         _agent.isStopped = true;
+        _agent.velocity = Vector3.zero;
         _agent.ResetPath();
+    }
+
+    private void StopPhysics()
+    {
+        if (_rigidbody == null) return;
+        _rigidbody.linearVelocity = Vector3.zero;
+        _rigidbody.angularVelocity = Vector3.zero;
     }
 
     private void ResumeAgent(float speed)

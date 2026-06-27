@@ -238,27 +238,102 @@ public class CameraSystem : MonoBehaviour
 
         // 판정 기준점: 콜라이더 중심(없으면 transform 위치)
         Vector3 camPos = cam.transform.position;
-        Vector3 targetPos = puang.TryGetComponent<Collider>(out var col) ? col.bounds.center : puang.transform.position;
+        Bounds targetBounds = GetTargetBounds(puang);
+        Vector3 targetPos = targetBounds.center;
 
         // 1) 거리
         if (Vector3.Distance(camPos, targetPos) > range) return;
 
         // 2) 화면 안(프러스텀): 뷰포트 0~1 범위 + 카메라 앞(z>0)
-        Vector3 vp = cam.WorldToViewportPoint(targetPos);
-        if (vp.z <= 0f || vp.x < 0f || vp.x > 1f || vp.y < 0f || vp.y > 1f) return;
+        if (!TryGetVisibleTargetPoint(cam, puang.transform, targetBounds, out targetPos)) return;
 
         // 3) 장애물 차단: 카메라→대상 사이에 푸앙이가 아닌 콜라이더가 막으면 실패
-        if (Physics.Linecast(camPos, targetPos, out RaycastHit hit, occlusionMask, QueryTriggerInteraction.Ignore))
-        {
-            Transform t = hit.collider.transform;
-            bool hitIsPuang = t == puang.transform || t.IsChildOf(puang.transform);
-            if (!hitIsPuang) return;
-        }
-
         target.OnFlashStunned(stunDuration);
     }
 
     // ── 배터리 갱신 ─────────────────────────────────────────
+    private Bounds GetTargetBounds(GameObject target)
+    {
+        bool hasBounds = false;
+        Bounds bounds = new Bounds(target.transform.position, Vector3.zero);
+
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers)
+        {
+            if (r == null || !r.enabled) continue;
+            if (!hasBounds)
+            {
+                bounds = r.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(r.bounds);
+            }
+        }
+
+        Collider[] colliders = target.GetComponentsInChildren<Collider>();
+        foreach (Collider c in colliders)
+        {
+            if (c == null || !c.enabled) continue;
+            if (!hasBounds)
+            {
+                bounds = c.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(c.bounds);
+            }
+        }
+
+        return bounds;
+    }
+
+    private bool TryGetVisibleTargetPoint(Camera cam, Transform targetRoot, Bounds bounds, out Vector3 visiblePoint)
+    {
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+        Vector3[] points =
+        {
+            center,
+            center + new Vector3( extents.x,  extents.y,  extents.z),
+            center + new Vector3( extents.x,  extents.y, -extents.z),
+            center + new Vector3( extents.x, -extents.y,  extents.z),
+            center + new Vector3( extents.x, -extents.y, -extents.z),
+            center + new Vector3(-extents.x,  extents.y,  extents.z),
+            center + new Vector3(-extents.x,  extents.y, -extents.z),
+            center + new Vector3(-extents.x, -extents.y,  extents.z),
+            center + new Vector3(-extents.x, -extents.y, -extents.z),
+        };
+
+        foreach (Vector3 point in points)
+        {
+            if (!IsInViewport(cam, point)) continue;
+            if (!HasLineOfSight(cam.transform.position, point, targetRoot)) continue;
+            visiblePoint = point;
+            return true;
+        }
+
+        visiblePoint = center;
+        return false;
+    }
+
+    private static bool IsInViewport(Camera cam, Vector3 worldPoint)
+    {
+        Vector3 vp = cam.WorldToViewportPoint(worldPoint);
+        return vp.z > 0f && vp.x >= 0f && vp.x <= 1f && vp.y >= 0f && vp.y <= 1f;
+    }
+
+    private bool HasLineOfSight(Vector3 from, Vector3 to, Transform targetRoot)
+    {
+        if (!Physics.Linecast(from, to, out RaycastHit hit, occlusionMask, QueryTriggerInteraction.Ignore))
+            return true;
+
+        Transform hitTransform = hit.collider.transform;
+        return hitTransform == targetRoot || hitTransform.IsChildOf(targetRoot);
+    }
+
     private void SetNormalSlots(int value)
     {
         _normalSlots = Mathf.Clamp(value, 0, normalMax);
