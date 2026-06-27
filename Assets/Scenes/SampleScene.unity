@@ -673,8 +673,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4854427249d339f4c8e3699b3f6c40f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player_Ctrl
-  mouseSpeed: 1
-  moveSpeed: 1
+  mouseSpeed: 20
+  walkSpeed: 5
+  runSpeedMultiplier: 9
+  runAccelerationTime: 1
+  runDecelerationTime: 1
+  stamina: 0
+  maxStamina: 100
+  staminaDrainPerSecond: 10
+  staminaRecoveryDelay: 2
+  staminaRecoveryPerSecond: 10
+  exhaustedRecoveryPercent: 30
 --- !u!54 &894956116
 Rigidbody:
   m_ObjectHideFlags: 0
