@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/ClearPanel.uss#ClearPanel"/>
+    <ui:VisualElement name="clear-root" class="clear-root" style="display: none;">
+        <ui:VisualElement class="clear-panel">
+            <ui:Label text="ESCAPED" class="clear-title"/>
+            <ui:Label name="clear-message" text="당신은 증거를 들고 나왔다." class="clear-message"/>
+            <ui:VisualElement class="clear-actions">
+                <ui:Button name="clear-restart" text="다시하기" class="clear-button clear-button-primary"/>
+                <ui:Button name="clear-menu" text="타이틀" class="clear-button"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

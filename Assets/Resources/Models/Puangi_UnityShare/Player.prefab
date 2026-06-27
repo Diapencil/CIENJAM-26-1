@@ -479,6 +479,7 @@ MonoBehaviour:
   staminaRecoveryDelay: 2
   staminaRecoveryPerSecond: 10
   exhaustedRecoveryPercent: 30
+  standUpCheckSkin: 0.05
   sitColliderHeight: 1
   sitCameraYOffset: -0.8
   sitTransitionSpeed: 10
@@ -507,7 +508,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 1
+  m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 1
 --- !u!114 &1571964371801251917
@@ -524,7 +525,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraSystem
   normalMax: 4
   chargeMax: 1
-  normalStart: 2
+  normalStart: 4
   chargeStart: 1
   normalFlashCost: 1
   chargeFlashCost: 1

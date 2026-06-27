@@ -13,6 +13,7 @@ public class DeathSequenceController : MonoBehaviour
     [Header("Video")]
     [SerializeField] private VideoPlayer videoPlayer;
     [SerializeField] private VideoClip deathClip;
+    [SerializeField] private Camera targetCamera; // 비우면 Camera.main 사용
     [SerializeField, Min(0f)] private float prepareTimeout = 3f;
 
     [Header("Flow")]
@@ -169,11 +170,15 @@ public class DeathSequenceController : MonoBehaviour
         if (deathClip != null)
             videoPlayer.clip = deathClip;
 
-        if (videoPlayer.renderMode == VideoRenderMode.APIOnly)
-        {
-            videoPlayer.renderMode = VideoRenderMode.CameraNearPlane;
-            videoPlayer.targetCamera = Camera.main;
-        }
+        // 항상 카메라 근평면 출력으로 강제 (소리만 나고 화면 안 나오는 문제 방지)
+        videoPlayer.renderMode = VideoRenderMode.CameraNearPlane;
+
+        if (videoPlayer.targetCamera == null)
+            videoPlayer.targetCamera = targetCamera != null ? targetCamera : Camera.main;
+
+        if (videoPlayer.targetCamera == null)
+            Debug.LogWarning("[DeathSequenceController] No target camera for death video. " +
+                             "Assign Camera in inspector or tag the game camera as MainCamera.", this);
 
         return videoPlayer;
     }
