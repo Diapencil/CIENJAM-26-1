@@ -6,7 +6,7 @@ public class PlaySceneAudioController : MonoBehaviour
 {
     [Header("BGM")]
     [SerializeField] private string bgmName = "게임 배경음악";
-    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.45f;
+    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.135f;
 
     [Header("Player Footsteps")]
     [SerializeField] private Transform player;
@@ -27,17 +27,30 @@ public class PlaySceneAudioController : MonoBehaviour
     [Header("Puangi")]
     [SerializeField] private PuangAI[] puangs;
     [SerializeField] private string puangAmbientName = "푸앙이 ambient sound";
-    [SerializeField, Range(0f, 1f)] private float puangIdleAmbientVolume = 0.32f;
-    [SerializeField, Range(0f, 1f)] private float puangCuriousAmbientVolume = 0.48f;
-    [SerializeField, Range(0f, 1f)] private float puangChaseAmbientVolume = 0.68f;
-    [SerializeField, Range(0f, 1f)] private float puangStunAmbientVolume = 0.16f;
+    [SerializeField] private string puangStunReleaseName = "푸앙이 ambient sound 2";
+    [SerializeField] private string puangStunName = "푸앙이 스턴";
+    [SerializeField] private float puangAudibleRadius = 15f;
+    [SerializeField, Range(0f, 1f)] private float puangIdleAmbientVolume = 0.825f;
+    [SerializeField, Range(0f, 1f)] private float puangCuriousAmbientVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float puangChaseAmbientVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float puangStunVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float puangStunReleaseVolume = 1f;
 
     [Header("Horror Cue")]
     [SerializeField] private string horrorKickName = "호러 사운드 킥";
     [SerializeField, Range(0f, 1f)] private float horrorKickVolume = 0.78f;
     [SerializeField] private float horrorKickCooldown = 3f;
 
-    private readonly Dictionary<PuangAI, int> _puangAmbientIds = new();
+    private class PuangAmbientState
+    {
+        public int ambientId = -1;
+        public int stunId = -1;
+        public int stunReleaseId = -1;
+        public float stunReleaseOnlyUntil;
+        public PuangAI.PuangState currentState = PuangAI.PuangState.Idle;
+    }
+
+    private readonly Dictionary<PuangAI, PuangAmbientState> _puangAmbientStates = new();
     private readonly Dictionary<PuangAI, System.Action<PuangAI.PuangState>> _puangStateHandlers = new();
     private readonly Dictionary<PuangAI, System.Action> _puangCaughtHandlers = new();
 
@@ -63,6 +76,7 @@ public class PlaySceneAudioController : MonoBehaviour
     private void Update()
     {
         UpdateFootsteps();
+        UpdatePuangAmbiences();
     }
 
     private void OnDisable()
@@ -118,9 +132,8 @@ public class PlaySceneAudioController : MonoBehaviour
         {
             if (puang == null || _puangStateHandlers.ContainsKey(puang)) continue;
 
-            int id = _audio.PlayLoopingSound(puangAmbientName, puang.transform, GetPuangAmbientVolume(puang.State));
-            if (id >= 0)
-                _puangAmbientIds[puang] = id;
+            _puangAmbientStates[puang] = new PuangAmbientState { currentState = puang.State };
+            UpdatePuangAmbient(puang);
 
             System.Action<PuangAI.PuangState> stateHandler = state => OnPuangStateChanged(puang, state);
             System.Action caughtHandler = PlayHorrorKick;
@@ -129,6 +142,57 @@ public class PlaySceneAudioController : MonoBehaviour
             _puangStateHandlers[puang] = stateHandler;
             _puangCaughtHandlers[puang] = caughtHandler;
         }
+    }
+
+    private void UpdatePuangAmbiences()
+    {
+        if (_audio == null || _puangAmbientStates.Count == 0) return;
+
+        foreach (var pair in _puangAmbientStates)
+        {
+            if (pair.Key == null) continue;
+
+            UpdatePuangAmbient(pair.Key);
+        }
+    }
+
+    private void UpdatePuangAmbient(PuangAI puang)
+    {
+        if (puang == null) return;
+        if (!_puangAmbientStates.TryGetValue(puang, out var state)) return;
+
+        bool audible = IsPuangAudible(puang);
+        bool stunned = state.currentState == PuangAI.PuangState.Stun;
+        bool playingStunRelease = Time.time < state.stunReleaseOnlyUntil;
+
+        if (!audible || stunned || playingStunRelease)
+        {
+            StopPuangAmbient(state);
+            return;
+        }
+
+        if (state.ambientId < 0)
+            state.ambientId = _audio.PlayLoopingSound(puangAmbientName, puang.transform, GetPuangAmbientVolume(state.currentState));
+        else
+            _audio.SetSoundVolume(state.ambientId, GetPuangAmbientVolume(state.currentState));
+    }
+
+    private bool IsPuangAudible(PuangAI puang)
+    {
+        if (player == null || puang == null)
+            return false;
+
+        float radius = Mathf.Max(0f, puangAudibleRadius);
+        return (player.position - puang.transform.position).sqrMagnitude <= radius * radius;
+    }
+
+    private void StopPuangAmbient(PuangAmbientState state)
+    {
+        if (state == null || state.ambientId < 0)
+            return;
+
+        _audio.StopSound(state.ambientId);
+        state.ambientId = -1;
     }
 
     private void UpdateFootsteps()
@@ -203,12 +267,54 @@ public class PlaySceneAudioController : MonoBehaviour
     private void OnPuangStateChanged(PuangAI puang, PuangAI.PuangState state)
     {
         if (puang == null) return;
+        if (!_puangAmbientStates.TryGetValue(puang, out var ambientState)) return;
 
-        if (_puangAmbientIds.TryGetValue(puang, out int id))
-            _audio.SetSoundVolume(id, GetPuangAmbientVolume(state));
+        var previousState = ambientState.currentState;
+        ambientState.currentState = state;
+
+        if (state == PuangAI.PuangState.Stun)
+            PlayPuangStun(puang, ambientState);
+        else if (previousState == PuangAI.PuangState.Stun)
+            PlayPuangStunRelease(puang, ambientState);
+
+        UpdatePuangAmbient(puang);
 
         if (state == PuangAI.PuangState.Chase)
             PlayHorrorKick();
+    }
+
+    private void PlayPuangStun(PuangAI puang, PuangAmbientState state)
+    {
+        StopPuangAmbient(state);
+        StopPuangSound(state.stunReleaseId);
+        state.stunReleaseId = -1;
+        state.stunReleaseOnlyUntil = 0f;
+
+        if (!IsPuangAudible(puang)) return;
+        state.stunId = _audio.PlaySound(puangStunName, puang.transform, puangStunVolume);
+    }
+
+    private void PlayPuangStunRelease(PuangAI puang, PuangAmbientState state)
+    {
+        StopPuangSound(state.stunId);
+        state.stunId = -1;
+
+        if (!IsPuangAudible(puang))
+        {
+            state.stunReleaseOnlyUntil = 0f;
+            return;
+        }
+
+        state.stunReleaseId = _audio.PlaySound(puangStunReleaseName, puang.transform, puangStunReleaseVolume);
+
+        var clip = ResourceManager.Instance.Get<AudioClip>(puangStunReleaseName);
+        state.stunReleaseOnlyUntil = Time.time + (clip != null ? clip.length : 1f);
+    }
+
+    private void StopPuangSound(int id)
+    {
+        if (_audio == null || id < 0) return;
+        _audio.StopSound(id);
     }
 
     private void PlayHorrorKick()
@@ -226,7 +332,6 @@ public class PlaySceneAudioController : MonoBehaviour
         {
             PuangAI.PuangState.Curious => puangCuriousAmbientVolume,
             PuangAI.PuangState.Chase => puangChaseAmbientVolume,
-            PuangAI.PuangState.Stun => puangStunAmbientVolume,
             _ => puangIdleAmbientVolume
         };
     }
@@ -241,10 +346,14 @@ public class PlaySceneAudioController : MonoBehaviour
     {
         if (_audio == null) return;
 
-        foreach (int id in _puangAmbientIds.Values)
-            _audio.StopSound(id);
+        foreach (var state in _puangAmbientStates.Values)
+        {
+            StopPuangAmbient(state);
+            StopPuangSound(state.stunId);
+            StopPuangSound(state.stunReleaseId);
+        }
 
-        _puangAmbientIds.Clear();
+        _puangAmbientStates.Clear();
     }
 
     private void StopSceneBGM()
