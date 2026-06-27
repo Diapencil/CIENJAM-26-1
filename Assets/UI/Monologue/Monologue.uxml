@@ -1,0 +1,14 @@
+<!--
+  Monologue.uxml
+  Bottom-screen monologue overlay for UI Toolkit.
+  Usage: Assign this asset to a UIDocument on the MonologueView GameObject.
+-->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="Monologue.uss" />
+
+    <ui:VisualElement name="monologue-root" class="monologue-root">
+        <ui:VisualElement name="monologue-box" class="monologue-box">
+            <ui:Label name="monologue-body" class="monologue-body" text="" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

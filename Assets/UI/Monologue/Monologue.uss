@@ -1,0 +1,30 @@
+/*
+  Monologue.uss
+  Bottom narration styling. It intentionally uses a lighter frame than dialogue because it has no speaker or choices.
+*/
+
+.monologue-root {
+    flex-grow: 1;
+    display: none;
+}
+
+.monologue-box {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 4%;
+    min-height: 88px;
+    padding: 18px 26px;
+    background-color: rgba(18, 17, 15, 0.84);
+    border-width: 1px;
+    border-color: rgba(210, 190, 145, 0.38);
+    border-radius: 6px;
+    justify-content: center;
+}
+
+.monologue-body {
+    font-size: 25px;
+    color: rgb(235, 229, 216);
+    white-space: normal;
+    -unity-text-align: middle-center;
+}

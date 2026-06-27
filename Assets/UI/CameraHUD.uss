@@ -1,6 +1,6 @@
 /*
     CameraHUD.uss
-    기능 : CameraHUD.uxml 스타일. 카메라 뷰파인더 코너 마크와 배터리 숫자 패널의 외형을 정의한다.
+    기능 : CameraHUD.uxml 스타일. 카메라 뷰파인더 코너 마크, 배터리 인디케이터(잔량 이미지/번개), 사진 저장 용량 텍스트의 외형을 정의한다.
     사용 : CameraHUD.uxml 의 <Style src="CameraHUD.uss" /> 로 참조된다.
 */
 
@@ -48,17 +48,46 @@
     border-bottom-width: 4px;
 }
 
-/* 배터리 숫자 패널 (우하단) */
-.battery-panel {
+/* 배터리 인디케이터 (우상단) — 번개(고성능) + 배터리(일반 잔량) 가로 배치 */
+.battery-indicator {
     position: absolute;
-    right: 48px;
-    bottom: 48px;
-    align-items: flex-end;
+    top: 9%;
+    right: 5%;
+    flex-direction: row;
+    align-items: center;
 }
 
-.battery-label {
+/* 고성능 배터리(번개). 코드가 display 로 활성/비활성 토글 (기본 숨김) */
+.battery-charge {
+    width: 18px;
+    height: 32px;
+    margin-right: 10px;
+    display: none;
+}
+
+/* 일반 배터리 잔량 이미지들이 겹쳐 들어갈 컨테이너 */
+.battery-normal-stack {
+    position: relative;
+    width: 56px;
+    height: 30px;
+}
+
+/* 잔량별 이미지: 같은 위치에 겹쳐 두고 기본 숨김 → 코드가 잔량에 맞는 1장만 Flex */
+.battery-normal-level {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+/* 사진 저장 용량 텍스트 (좌하단) */
+.photo-storage {
+    position: absolute;
+    left: 6%;
+    bottom: 10%;
     color: rgb(255, 255, 255);
     font-size: 22px;
     -unity-font-style: bold;
-    margin-top: 2px;
 }
