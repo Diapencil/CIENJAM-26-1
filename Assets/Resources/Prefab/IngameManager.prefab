@@ -434,7 +434,9 @@ MonoBehaviour:
   puangCuriousAmbientVolume: 1
   puangChaseAmbientVolume: 1
   puangStunVolume: 1
+  puangStunBoostVolume: 0.5
   puangStunReleaseVolume: 1
+  puangAmbientGap: 2
   horrorKickName: "\uD638\uB7EC \uC0AC\uC6B4\uB4DC \uD0A5"
   horrorKickVolume: 0.78
   horrorKickCooldown: 3
