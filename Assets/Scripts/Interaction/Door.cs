@@ -33,7 +33,7 @@ public class Door : MonoBehaviour
         if (applyStartPoseOnAwake)
         {
             transform.localPosition = startLocalPosition;
-            transform.localEulerAngles = startLocalRotation;
+            transform.localRotation = Quaternion.Euler(startLocalRotation);
             isOpen = false;
         }
     }
@@ -63,7 +63,7 @@ public class Door : MonoBehaviour
         sequence?.Kill();
         sequence = DOTween.Sequence();
         sequence.Join(transform.DOLocalMove(targetPosition, duration).SetEase(ease));
-        sequence.Join(transform.DOLocalRotate(targetRotation, duration).SetEase(ease));
+        sequence.Join(transform.DOLocalRotateQuaternion(Quaternion.Euler(targetRotation), duration).SetEase(ease));
         sequence.SetLink(gameObject);
     }
 

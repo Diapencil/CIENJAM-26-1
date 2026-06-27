@@ -371,7 +371,7 @@ MonoBehaviour:
   randomMessages:
   - "\uD478\uC6B0\uC544\uC544\uC559"
   - "\uC870\uC2EC\uD574!"
-  loadingImage: {fileID: 21300000, guid: e713a76d1dc1e4a48aa4ad1b4f90d023, type: 3}
+  loadingImage: {fileID: 21300000, guid: c6b13de726cfe1b478eb9b93cf818f6f, type: 3}
 --- !u!114 &452959953
 MonoBehaviour:
   m_ObjectHideFlags: 0

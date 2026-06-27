@@ -151,6 +151,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StartMenuController
   startTargetScene: Play
   optionsPanelAsset: {fileID: 9197481963319205126, guid: 799f913e34f797246a25805b77aafde3, type: 3}
+  titlePulseInterval: 2
+  buttonsRevealDelay: 1
 --- !u!114 &658638125
 MonoBehaviour:
   m_ObjectHideFlags: 0

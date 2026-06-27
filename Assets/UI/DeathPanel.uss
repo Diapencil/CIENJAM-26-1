@@ -1,0 +1,78 @@
+/*
+    DeathPanel.uss
+    Feature: Styles the death result panel.
+*/
+
+.death-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(0, 0, 0);
+}
+
+.death-panel {
+    width: 420px;
+    padding: 28px;
+    background-color: rgb(18, 18, 22);
+    border-width: 1px;
+    border-color: rgb(85, 85, 92);
+    border-radius: 6px;
+}
+
+.death-title {
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(245, 245, 245);
+    -unity-text-align: middle-center;
+    margin-bottom: 10px;
+}
+
+.death-reason {
+    font-size: 16px;
+    color: rgb(190, 190, 198);
+    -unity-text-align: middle-center;
+    margin-bottom: 22px;
+    white-space: normal;
+}
+
+.death-actions {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.death-button {
+    min-width: 128px;
+    height: 42px;
+    margin-left: 6px;
+    margin-right: 6px;
+    font-size: 17px;
+    -unity-font-style: bold;
+    color: rgb(240, 240, 244);
+    background-color: rgb(54, 58, 66);
+    border-width: 1px;
+    border-color: rgb(118, 123, 132);
+    border-radius: 4px;
+}
+
+.death-button-primary {
+    background-color: rgb(92, 52, 52);
+    border-color: rgb(172, 102, 102);
+}
+
+.death-button:hover {
+    background-color: rgb(75, 84, 98);
+    border-color: rgb(220, 228, 238);
+}
+
+.death-button-primary:hover {
+    background-color: rgb(122, 62, 62);
+    border-color: rgb(238, 146, 146);
+}
+
+.death-button:active {
+    background-color: rgb(35, 38, 45);
+}

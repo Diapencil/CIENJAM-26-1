@@ -1,86 +1,148 @@
-// StartMenuController.cs
-// 기능 : 시작 화면 제어기. 좌측 하단 Start/Option/Exit 버튼을 처리하고, 옵션 팝업(OptionsPanel)을
-//        런타임에 주입해 표시/숨김을 관리한다.
-//        - Start  : SceneController 로 startTargetScene 씬 로드
-//        - Option : 옵션 팝업 표시
-//        - Exit   : 애플리케이션 종료(에디터에선 플레이 중지)
-// 사용 : 시작 씬의 UIDocument(Source Asset = StartMenu.uxml) 가 붙은 GameObject 에 추가하고,
-//        인스펙터에서 optionsPanelAsset(= OptionsPanel.uxml) 과 startTargetScene 을 지정한다.
-
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(UIDocument))]
 public class StartMenuController : MonoBehaviour
 {
-    [Header("씬 전환")]
-    [Tooltip("시작 버튼을 눌렀을 때 SceneController 로 로드할 대상 씬 이름")]
+    [Header("Scene")]
+    [Tooltip("SceneController loads this scene when Start is clicked.")]
     [SerializeField] private string startTargetScene;
 
-    [Header("옵션 팝업")]
-    [Tooltip("재사용할 옵션 팝업 UXML(OptionsPanel.uxml). 런타임에 복제되어 화면에 주입됩니다.")]
+    [Header("Options")]
+    [Tooltip("Reusable OptionsPanel.uxml. It is cloned into this document at runtime.")]
     [SerializeField] private VisualTreeAsset optionsPanelAsset;
 
+    [Header("Intro")]
+    [SerializeField] private float titlePulseInterval = 2f;
+    [SerializeField] private float buttonsRevealDelay = 1f;
+
+    private const string RootName = "start-root";
+    private const string TitleLabelName = "title-label";
+    private const string TitleGlowName = "title-glow";
+    private const string RevealedClass = "revealed";
+    private const string ButtonsReadyClass = "buttons-ready";
+    private const string TitlePulseClass = "title-pulse";
     private const string StartButtonName = "btn-start";
     private const string OptionButtonName = "btn-option";
     private const string ExitButtonName = "btn-exit";
 
+    private VisualElement _root;
+    private Label _titleLabel;
+    private Label _titleGlow;
+    private Button _startButton;
+    private Button _optionButton;
+    private Button _exitButton;
+    private VisualElement _optionsPanelRoot;
     private OptionsPanelController _options;
+    private Coroutine _titlePulseRoutine;
+    private Coroutine _buttonsRevealRoutine;
+    private bool _revealed;
+    private bool _starting;
 
     private void OnEnable()
     {
-        var root = GetComponent<UIDocument>().rootVisualElement;
-        if (root == null)
+        var documentRoot = GetComponent<UIDocument>().rootVisualElement;
+        if (documentRoot == null)
         {
-            Debug.LogError("[StartMenuController] rootVisualElement 가 없습니다. Source Asset 을 확인하세요.", this);
+            Debug.LogError("[StartMenuController] UIDocument rootVisualElement is missing.", this);
             return;
         }
 
-        SetupOptionsPanel(root);
-        BindButtons(root);
+        _root = documentRoot.Q<VisualElement>(RootName);
+        if (_root == null)
+        {
+            Debug.LogError($"[StartMenuController] '{RootName}' element is missing.", this);
+            return;
+        }
+
+        _revealed = false;
+        _starting = false;
+        _root.RemoveFromClassList(RevealedClass);
+        _root.RemoveFromClassList(ButtonsReadyClass);
+
+        _titleLabel = _root.Q<Label>(TitleLabelName);
+        _titleGlow = _root.Q<Label>(TitleGlowName);
+        ApplyTitlePulseTiming();
+        SetupOptionsPanel(_root);
+        BindButtons(_root);
+        SetButtonsEnabled(false);
+
+        _titlePulseRoutine = StartCoroutine(PulseTitle());
     }
 
-    /// <summary>옵션 팝업을 복제해 루트에 추가하고 컨트롤러를 생성한다. 초기엔 숨김.</summary>
+    private void OnDisable()
+    {
+        if (_titlePulseRoutine != null)
+        {
+            StopCoroutine(_titlePulseRoutine);
+            _titlePulseRoutine = null;
+        }
+
+        if (_buttonsRevealRoutine != null)
+        {
+            StopCoroutine(_buttonsRevealRoutine);
+            _buttonsRevealRoutine = null;
+        }
+
+        if (_startButton != null) _startButton.clicked -= OnStart;
+        if (_optionButton != null) _optionButton.clicked -= OnOption;
+        if (_exitButton != null) _exitButton.clicked -= OnExit;
+
+        _optionsPanelRoot?.RemoveFromHierarchy();
+        _optionsPanelRoot = null;
+        _options = null;
+    }
+
+    private void Update()
+    {
+        if (_revealed || _starting) return;
+        if (Input.anyKeyDown) RevealMenu();
+    }
+
     private void SetupOptionsPanel(VisualElement root)
     {
         if (optionsPanelAsset == null)
         {
-            Debug.LogWarning("[StartMenuController] optionsPanelAsset 이 비어 있어 옵션 팝업을 사용할 수 없습니다.", this);
+            Debug.LogWarning("[StartMenuController] optionsPanelAsset is empty; options popup is unavailable.", this);
             return;
         }
 
-        var panelRoot = optionsPanelAsset.CloneTree();
-        // CloneTree 결과 컨테이너가 화면을 덮도록 stretch
-        panelRoot.style.position = Position.Absolute;
-        panelRoot.style.left = 0;
-        panelRoot.style.top = 0;
-        panelRoot.style.right = 0;
-        panelRoot.style.bottom = 0;
-        root.Add(panelRoot);
+        _optionsPanelRoot = optionsPanelAsset.CloneTree();
+        _optionsPanelRoot.style.position = Position.Absolute;
+        _optionsPanelRoot.style.left = 0;
+        _optionsPanelRoot.style.top = 0;
+        _optionsPanelRoot.style.right = 0;
+        _optionsPanelRoot.style.bottom = 0;
+        root.Add(_optionsPanelRoot);
 
-        _options = new OptionsPanelController(panelRoot);
+        _options = new OptionsPanelController(_optionsPanelRoot);
         _options.Hide();
     }
 
     private void BindButtons(VisualElement root)
     {
-        var startButton = root.Q<Button>(StartButtonName);
-        if (startButton != null) startButton.clicked += OnStart;
+        _startButton = root.Q<Button>(StartButtonName);
+        if (_startButton != null) _startButton.clicked += OnStart;
 
-        var optionButton = root.Q<Button>(OptionButtonName);
-        if (optionButton != null) optionButton.clicked += OnOption;
+        _optionButton = root.Q<Button>(OptionButtonName);
+        if (_optionButton != null) _optionButton.clicked += OnOption;
 
-        var exitButton = root.Q<Button>(ExitButtonName);
-        if (exitButton != null) exitButton.clicked += OnExit;
+        _exitButton = root.Q<Button>(ExitButtonName);
+        if (_exitButton != null) _exitButton.clicked += OnExit;
     }
 
     private void OnStart()
     {
         if (string.IsNullOrEmpty(startTargetScene))
         {
-            Debug.LogError("[StartMenuController] startTargetScene 이 비어 있습니다.", this);
+            Debug.LogError("[StartMenuController] startTargetScene is empty.", this);
             return;
         }
+
+        _starting = true;
+        SetButtonsEnabled(false);
         SceneController.Instance.LoadScene(startTargetScene);
     }
 
@@ -93,5 +155,59 @@ public class StartMenuController : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+
+    private IEnumerator PulseTitle()
+    {
+        while (!_revealed && !_starting)
+        {
+            if (_titleLabel != null)
+                _titleLabel.ToggleInClassList(TitlePulseClass);
+            if (_titleGlow != null)
+                _titleGlow.ToggleInClassList(TitlePulseClass);
+
+            yield return new WaitForSecondsRealtime(titlePulseInterval);
+        }
+    }
+
+    private void ApplyTitlePulseTiming()
+    {
+        var duration = new StyleList<TimeValue>(
+            new List<TimeValue> { new TimeValue(titlePulseInterval, TimeUnit.Second) });
+
+        if (_titleLabel != null)
+            _titleLabel.style.transitionDuration = duration;
+        if (_titleGlow != null)
+            _titleGlow.style.transitionDuration = duration;
+    }
+
+    private void RevealMenu()
+    {
+        _revealed = true;
+        _root.AddToClassList(RevealedClass);
+
+        if (_titleLabel != null)
+            _titleLabel.RemoveFromClassList(TitlePulseClass);
+        if (_titleGlow != null)
+            _titleGlow.RemoveFromClassList(TitlePulseClass);
+
+        SetButtonsEnabled(false);
+        _buttonsRevealRoutine = StartCoroutine(ShowButtonsAfterDelay());
+    }
+
+    private IEnumerator ShowButtonsAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(buttonsRevealDelay);
+        if (_starting) yield break;
+
+        _root.AddToClassList(ButtonsReadyClass);
+        SetButtonsEnabled(true);
+    }
+
+    private void SetButtonsEnabled(bool enabled)
+    {
+        _startButton?.SetEnabled(enabled);
+        _optionButton?.SetEnabled(enabled);
+        _exitButton?.SetEnabled(enabled);
     }
 }

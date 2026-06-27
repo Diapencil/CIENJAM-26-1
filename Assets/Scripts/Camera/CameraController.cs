@@ -85,6 +85,9 @@ public class CameraController : DomainSingleton<CameraController>
     /// <summary>카메라(뷰파인더) 모드 여부.</summary>
     public bool IsCameraView => CurrentMode == CameraMode.CameraView;
 
+    /// <summary>카메라 모드 전환 트윈이 진행 중인지 여부.</summary>
+    public bool IsModeTransitioning => _transitioning;
+
     /// <summary>카메라 모드 + 앨범 서브모드 여부(시간 정지/앨범 표시 조건).</summary>
     public bool IsAlbumView => IsCameraView && CurrentViewMode == CameraViewMode.Album;
 

@@ -1,18 +1,15 @@
-<!--
-    StartMenu.uxml
-    기능 : 시작 화면 UI 레이아웃. 루트는 투명(3D 씬이 배경으로 비침)이며,
-           좌측 하단에 Start / Option / Exit 버튼을 세로로 배치한다.
-           옵션 팝업은 이 UXML 에 포함하지 않고 StartMenuController 가 런타임에 주입한다.
-    사용 : 시작 씬의 UIDocument Source Asset 에 지정하고, 같은 GameObject 에 StartMenuController 를 추가한다.
-           버튼 이름(btn-start / btn-option / btn-exit)은 StartMenuController 의 상수와 일치해야 한다.
--->
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI/StartMenu.uss?fileID=7433441132597879392&amp;guid=0270eed37b1840d4ea1adf46e8b35e16&amp;type=3#StartMenu" />
-    <ui:VisualElement name="start-root" class="start-root" picking-mode="Ignore">
+    <Style src="project://database/Assets/UI/StartMenu.uss?fileID=7433441132597879392&amp;guid=0270eed37b1840d4ea1adf46e8b35e16&amp;type=3#StartMenu"/>
+    <ui:VisualElement name="start-root" class="start-root">
+        <ui:VisualElement name="start-bg-blur" class="start-bg start-bg-blur"/>
+        <ui:VisualElement name="title-block" class="title-block">
+            <ui:Label name="title-glow" text="Press The Shutter" class="title-label title-glow" style="-unity-font-definition: resource(&quot;Fonts/Lato-Light&quot;); color: rgba(255, 255, 255, 0.6);"/>
+            <ui:Label name="title-label" text="Press The Shutter" class="title-label" style="-unity-font-definition: resource(&quot;Fonts/Lato-Light&quot;);"/>
+        </ui:VisualElement>
         <ui:VisualElement name="menu-buttons" class="menu-buttons">
-            <ui:Button name="btn-start" text="시작" class="menu-button" />
-            <ui:Button name="btn-option" text="옵션" class="menu-button" />
-            <ui:Button name="btn-exit" text="종료" class="menu-button" />
+            <ui:Button name="btn-start" text="Start" class="menu-button" style="-unity-font-definition: resource(&quot;Fonts/Lato-Light&quot;);"/>
+            <ui:Button name="btn-option" text="Option" class="menu-button" style="-unity-font-definition: resource(&quot;Fonts/Lato-Light&quot;);"/>
+            <ui:Button name="btn-exit" text="Exit" class="menu-button" style="-unity-font-definition: resource(&quot;Fonts/Lato-Light&quot;);"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

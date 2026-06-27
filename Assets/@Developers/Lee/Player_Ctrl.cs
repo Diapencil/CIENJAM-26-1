@@ -45,11 +45,13 @@ public class Player_Ctrl : MonoBehaviour
     bool isSitting;
     float sitSpeedRatio;
 
+    private void OnEnable()
+    {
+        CursorStateController.RequestLocked(this);
+    }
+
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;   // 마우스 커서를 화면 안에서 고정
-        Cursor.visible = false;                     // 마우스 커서를 보이지 않도록 설정
-
         rb = GetComponent<Rigidbody>();             // Rigidbody 컴포넌트 가져오기
         rb.freezeRotation = true;                   // Rigidbody의 회전을 고정하여 물리 연산에 영향을 주지 않도록 설정
 
@@ -68,6 +70,11 @@ public class Player_Ctrl : MonoBehaviour
 
         stamina = maxStamina;
         currentSpeed = walkSpeed;
+    }
+
+    private void OnDisable()
+    {
+        CursorStateController.Release(this);
     }
 
     void Update()
@@ -103,7 +110,8 @@ public class Player_Ctrl : MonoBehaviour
         Vector3 moveVec = transform.forward * v + transform.right * h;
 
         // 이동 벡터를 정규화하여 이동 속도와 시간 간격을 곱한 후 현재 위치에 더함
-        transform.position += moveVec.normalized * currentSpeed * sitSpeedRatio * Time.deltaTime;
+        Vector3 horizontalVelocity = moveVec.normalized * currentSpeed * sitSpeedRatio;
+        rb.linearVelocity = new Vector3(horizontalVelocity.x, rb.linearVelocity.y, horizontalVelocity.z);
     }
 
     void Run()

@@ -22,11 +22,24 @@ public enum GamePhase
     Playing,  // 탐색·증거수집·회피 (코어 루프)
     Escaping, // 최종 탈출 시퀀스(압력센서 유도) 진행 중
     Ending,   // 엔딩 연출 재생 중
-    Cleared   // 탈출 완료(종료 상태)
+    Cleared,  // 탈출 완료(종료 상태)
+    Dead      // 사망 연출/재시작 선택 중
 }
 
 public class GameManager : DomainSingleton<GameManager>
 {
+    public readonly struct DeathContext
+    {
+        public readonly string Reason;
+        public readonly UnityEngine.Object Source;
+
+        public DeathContext(string reason, UnityEngine.Object source)
+        {
+            Reason = reason;
+            Source = source;
+        }
+    }
+
     [Header("씬 이름 (흐름 제어)")]
     [Tooltip("재시작 시 다시 로드할 인게임 씬 이름")]
     [SerializeField] private string playSceneName = "Play";
@@ -47,6 +60,7 @@ public class GameManager : DomainSingleton<GameManager>
     // ── 탈출 진행 플래그 (세 기믹 연동) ───────────────────────
     /// <summary>탈출기믹1: 연구기록 비밀번호로 1구역 자물쇠 해제.</summary>
     public bool Gate1Unlocked { get; private set; }
+    public bool KeypadObtained { get; private set; }
     /// <summary>탈출기믹2-a: 비밀번호로 보관함 개방 → 열쇠 획득.</summary>
     public bool KeyObtained { get; private set; }
     /// <summary>탈출기믹2-b: 열쇠로 2구역 탈출문 개방.</summary>
@@ -59,9 +73,10 @@ public class GameManager : DomainSingleton<GameManager>
     public event Action<GamePhase> OnPhaseChanged;
     /// <summary>탈출 진행 플래그 중 하나가 켜질 때 발행. 인자는 켜진 플래그.</summary>
     public event Action<EscapeFlag> OnEscapeProgress;
+    public event Action<DeathContext> OnPlayerDied;
 
     /// <summary>탈출 진행 단계 식별자.</summary>
-    public enum EscapeFlag { Gate1, Key, Gate2, FinalEscape }
+    public enum EscapeFlag { Gate1, Keypad, Key, Gate2, FinalEscape }
 
     private bool _timing; // ElapsedTime 누적 여부(Playing/Escaping 동안만)
 
@@ -106,7 +121,23 @@ public class GameManager : DomainSingleton<GameManager>
     public void CompleteClear()
     {
         if (CurrentPhase != GamePhase.Ending) return;
+        _timing = false;
         SetPhase(GamePhase.Cleared);
+    }
+
+    public void KillPlayer(string reason = null, UnityEngine.Object source = null)
+    {
+        if (CurrentPhase == GamePhase.Dead)
+        {
+            Debug.Log($"[GameManager] KillPlayer ignored because phase is already Dead. reason='{reason}' source='{source}'", this);
+            return;
+        }
+
+        _timing = false;
+        var context = new DeathContext(reason, source);
+        Debug.Log($"[GameManager] Player death requested. reason='{reason}' source='{source}' previousPhase={CurrentPhase}", this);
+        SetPhase(GamePhase.Dead);
+        OnPlayerDied?.Invoke(context);
     }
 
     /// <summary>인게임 씬을 재로드해 처음부터 다시 시작한다.</summary>
@@ -128,6 +159,15 @@ public class GameManager : DomainSingleton<GameManager>
         if (Gate1Unlocked) return;
         Gate1Unlocked = true;
         OnEscapeProgress?.Invoke(EscapeFlag.Gate1);
+    }
+
+    public void ObtainKeypad()
+    {
+        if (KeypadObtained) return;
+
+        KeypadObtained = true;
+        Debug.Log("[GameManager] Keypad obtained.", this);
+        OnEscapeProgress?.Invoke(EscapeFlag.Keypad);
     }
 
     /// <summary>열쇠 획득 보고.</summary>

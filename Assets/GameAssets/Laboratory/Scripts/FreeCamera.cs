@@ -92,13 +92,11 @@ public class FreeCamera : MonoBehaviour
     public void StartLooking()
     {
         looking = true;
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        CursorStateController.RequestLocked(this);
     }
     public void StopLooking()
     {
         looking = false;
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
+        CursorStateController.Release(this);
     }
 }

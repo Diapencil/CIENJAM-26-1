@@ -149,8 +149,7 @@ public class CameraHudController : MonoBehaviour
     // 들어갈 때는 여기서 표시하지 않고, 전환 트윈 완료 시점(OnTransitionComplete)에 표시한다.
     private void OnModeChanged(CameraMode mode)
     {
-        if (mode != CameraMode.CameraView) SetVisible(false);
-        else UpdateVisibility();
+        SetVisible(false);
     }
 
     private void OnViewModeChanged(CameraViewMode _)
@@ -166,7 +165,10 @@ public class CameraHudController : MonoBehaviour
 
     private void UpdateVisibility()
     {
-        SetVisible(_controller != null && _controller.IsCameraView && !_controller.IsAlbumView);
+        SetVisible(_controller != null
+                   && _controller.IsCameraView
+                   && !_controller.IsModeTransitioning
+                   && !_controller.IsAlbumView);
     }
 
     private void SetVisible(bool visible)

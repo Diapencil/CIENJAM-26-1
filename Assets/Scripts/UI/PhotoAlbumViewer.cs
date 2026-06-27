@@ -32,9 +32,6 @@ public class PhotoAlbumViewer : MonoBehaviour
     private CameraController _controller;
     private PhotoAlbum _album;
     private int _selectedIndex = -1;
-    private bool _cursorOverridden;
-    private CursorLockMode _previousLockState;
-    private bool _previousCursorVisible;
 
     private void OnEnable()
     {
@@ -52,7 +49,7 @@ public class PhotoAlbumViewer : MonoBehaviour
             _controller.OnViewModeChanged -= OnViewModeChanged;
         }
 
-        RestoreCursorState();
+        CursorStateController.Release(this);
     }
 
     private IEnumerator BindWhenReady()
@@ -247,28 +244,11 @@ public class PhotoAlbumViewer : MonoBehaviour
     {
         if (albumVisible)
         {
-            if (!_cursorOverridden)
-            {
-                _previousLockState = UnityEngine.Cursor.lockState;
-                _previousCursorVisible = UnityEngine.Cursor.visible;
-                _cursorOverridden = true;
-            }
-
-            UnityEngine.Cursor.lockState = CursorLockMode.None;
-            UnityEngine.Cursor.visible = true;
+            CursorStateController.RequestUnlocked(this);
         }
         else
         {
-            RestoreCursorState();
+            CursorStateController.Release(this);
         }
-    }
-
-    private void RestoreCursorState()
-    {
-        if (!_cursorOverridden) return;
-
-        UnityEngine.Cursor.lockState = _previousLockState;
-        UnityEngine.Cursor.visible = _previousCursorVisible;
-        _cursorOverridden = false;
     }
 }

@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/DeathPanel.uss?fileID=7433441132597879392&amp;guid=a18864cbc5a640a4e95a2841156bdc74&amp;type=3#DeathPanel"/>
+    <ui:VisualElement name="death-root" class="death-root" style="display: none;">
+        <ui:VisualElement class="death-panel">
+            <ui:Label text="You Died" class="death-title"/>
+            <ui:Label name="death-reason" text="You died." class="death-reason"/>
+            <ui:VisualElement class="death-actions">
+                <ui:Button name="death-restart" text="Restart" class="death-button death-button-primary"/>
+                <ui:Button name="death-menu" text="Menu" class="death-button"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
