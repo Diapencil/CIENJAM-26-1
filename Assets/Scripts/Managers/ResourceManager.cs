@@ -90,10 +90,12 @@ public class ResourceManager : MonoBehaviour
 
             if (bucket.ContainsKey(asset.name))
             {
-                Debug.LogError($"[ResourceManager] 키 충돌: 타입 '{type.Name}' 에서 이름 '{asset.name}' 이(가) 중복됩니다. " +
-                               $"Resources 내 같은 타입의 동일 이름 에셋을 제거하거나 이름을 변경하세요.");
-                throw new InvalidOperationException(
-                    $"[ResourceManager] Duplicate resource key: ({type.FullName}, \"{asset.name}\")");
+                // 폰트의 'Font Material' 같은 서브에셋 부산물 때문에 같은 (타입, 이름) 키가 중복될 수 있다.
+                // 이 경우 초기화를 중단하지 않고 먼저 로드된 에셋을 유지한 채 경고만 남기고 스킵한다.
+                Debug.LogWarning($"[ResourceManager] 키 충돌: 타입 '{type.Name}' 에서 이름 '{asset.name}' 이(가) 중복됩니다. " +
+                                 $"먼저 로드된 에셋을 유지하고 이번 에셋은 무시합니다. " +
+                                 $"의도한 에셋이라면 Resources 내에서 이름을 변경하세요.");
+                continue;
             }
 
             bucket.Add(asset.name, asset);

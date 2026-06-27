@@ -16,6 +16,6 @@ MonoBehaviour:
   useLoadingScene: 1
   loadingSceneName: Loading
   leastHoldingDuration: 5
-  enterTransition: 2
-  exitTransition: 1
+  enterTransition: 1
+  exitTransition: 2
   transitionDuration: 0.5

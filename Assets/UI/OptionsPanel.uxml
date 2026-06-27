@@ -8,6 +8,7 @@
            OptionsPanelController 의 상수와 일치해야 한다.
 -->
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/OptionsPanel.uss?fileID=7433441132597879392&amp;guid=8c8b2993eaf5589409492052d6a0c431&amp;type=3#OptionsPanel" />
     <ui:VisualElement name="options-overlay" class="options-overlay">
         <ui:VisualElement name="options-panel" class="options-panel">
             <ui:Label text="옵션" class="options-title" />

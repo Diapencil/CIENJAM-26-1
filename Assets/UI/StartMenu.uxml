@@ -7,6 +7,7 @@
            버튼 이름(btn-start / btn-option / btn-exit)은 StartMenuController 의 상수와 일치해야 한다.
 -->
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/StartMenu.uss?fileID=7433441132597879392&amp;guid=0270eed37b1840d4ea1adf46e8b35e16&amp;type=3#StartMenu" />
     <ui:VisualElement name="start-root" class="start-root" picking-mode="Ignore">
         <ui:VisualElement name="menu-buttons" class="menu-buttons">
             <ui:Button name="btn-start" text="시작" class="menu-button" />

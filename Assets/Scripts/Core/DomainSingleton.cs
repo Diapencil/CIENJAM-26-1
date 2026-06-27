@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 도메인(씬/컨텍스트) 스코프 싱글톤. 글로벌 Singleton&lt;T&gt;와 달리 DontDestroyOnLoad 하지 않으며,

@@ -28,4 +28,25 @@
     margin-top: 10px;
     font-size: 22px;
     -unity-font-style: bold;
+    color: rgb(245, 245, 245);
+    background-color: rgba(18, 18, 22, 0.78);
+    border-width: 2px;
+    border-color: rgba(220, 220, 220, 0.45);
+    border-radius: 4px;
+    -unity-text-align: middle-center;
+}
+
+.menu-button:hover {
+    color: rgb(255, 255, 255);
+    background-color: rgba(52, 96, 140, 0.92);
+    border-color: rgb(255, 255, 255);
+}
+
+.menu-button:active {
+    background-color: rgba(28, 58, 92, 0.98);
+    border-color: rgb(160, 210, 255);
+}
+
+.menu-button:focus {
+    border-color: rgb(130, 200, 255);
 }

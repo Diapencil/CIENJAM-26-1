@@ -20,9 +20,10 @@ public class OptionsPanelController
     private const string BgmSliderName = "slider-bgm";
     private const string CloseButtonName = "options-close";
 
+    private readonly VisualElement _root;
     private readonly VisualElement _overlay;
 
-    public bool IsVisible => _overlay != null && _overlay.style.display == DisplayStyle.Flex;
+    public bool IsVisible => _root != null && _root.style.display == DisplayStyle.Flex;
 
     /// <param name="panelRoot">CloneTree 로 복제된 OptionsPanel 의 루트(또는 그 상위) VisualElement</param>
     public OptionsPanelController(VisualElement panelRoot)
@@ -33,6 +34,7 @@ public class OptionsPanelController
             return;
         }
 
+        _root = panelRoot;
         _overlay = panelRoot.Q<VisualElement>(OverlayName) ?? panelRoot;
 
         BindSlider(panelRoot, MasterSliderName,
@@ -68,12 +70,18 @@ public class OptionsPanelController
 
     public void Show()
     {
+        if (_root != null)
+            _root.style.display = DisplayStyle.Flex;
+
         if (_overlay != null)
             _overlay.style.display = DisplayStyle.Flex;
     }
 
     public void Hide()
     {
+        if (_root != null)
+            _root.style.display = DisplayStyle.None;
+
         if (_overlay != null)
             _overlay.style.display = DisplayStyle.None;
     }

@@ -26,6 +26,18 @@ public class LoadingScreenController : MonoBehaviour
 
     private void OnEnable()
     {
+        StartCoroutine(ApplyWhenDocumentReady());
+    }
+
+    private System.Collections.IEnumerator ApplyWhenDocumentReady()
+    {
+        yield return null;
+
+        Apply();
+    }
+
+    private void Apply()
+    {
         var root = GetComponent<UIDocument>().rootVisualElement;
         if (root == null)
         {

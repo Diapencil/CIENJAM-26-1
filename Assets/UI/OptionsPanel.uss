@@ -57,4 +57,24 @@
     height: 40px;
     font-size: 18px;
     -unity-font-style: bold;
+    color: rgb(245, 245, 245);
+    background-color: rgb(62, 72, 86);
+    border-width: 2px;
+    border-color: rgb(120, 128, 140);
+    border-radius: 4px;
+}
+
+.options-close-button:hover {
+    color: rgb(255, 255, 255);
+    background-color: rgb(76, 112, 148);
+    border-color: rgb(230, 238, 248);
+}
+
+.options-close-button:active {
+    background-color: rgb(38, 58, 82);
+    border-color: rgb(150, 205, 255);
+}
+
+.options-close-button:focus {
+    border-color: rgb(130, 200, 255);
 }

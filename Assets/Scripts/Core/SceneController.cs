@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class SceneController : Singleton<SceneController>
 {
@@ -10,10 +10,6 @@ public class SceneController : Singleton<SceneController>
     [Header("씬 설정 목록")]
     [Tooltip("프로젝트에서 사용하는 모든 SceneSO 를 등록하세요.")]
     [SerializeField] private List<SceneSO> sceneConfigs;
-
-    [Header("전환 효과 캔버스")]
-    [Tooltip("전환 효과에 사용할 CanvasGroup 입니다. 비워두면 자동으로 생성합니다.")]
-    [SerializeField] private CanvasGroup transitionCanvasGroup;
 
     public static float LoadingProgress { get; private set; }
 
@@ -28,7 +24,7 @@ public class SceneController : Singleton<SceneController>
     {
         base.Awake();
         BuildConfigMap();
-        EnsureTransitionCanvas();
+        ScreenFader.Instance.SetInstant(0f);
     }
 
     /// <summary>SceneSO 리스트를 딕셔너리로 변환합니다.</summary>
@@ -54,42 +50,6 @@ public class SceneController : Singleton<SceneController>
 
             _configMap[config.targetSceneName] = config;
         }
-    }
-
-    private void EnsureTransitionCanvas()
-    {
-        if (transitionCanvasGroup != null)
-        {
-            transitionCanvasGroup.alpha = 0f;
-            transitionCanvasGroup.blocksRaycasts = false;
-            return;
-        }
-
-        var canvasGo = new GameObject("TransitionCanvas");
-        canvasGo.transform.SetParent(transform);
-
-        var canvas = canvasGo.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 9999;
-
-        canvasGo.AddComponent<CanvasScaler>();
-        canvasGo.AddComponent<GraphicRaycaster>();
-
-        var panelGo = new GameObject("TransitionPanel");
-        panelGo.transform.SetParent(canvasGo.transform, false);
-
-        var rect = panelGo.AddComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-
-        var image = panelGo.AddComponent<Image>();
-        image.color = Color.black;
-
-        transitionCanvasGroup = panelGo.AddComponent<CanvasGroup>();
-        transitionCanvasGroup.alpha = 0f;
-        transitionCanvasGroup.blocksRaycasts = false;
     }
 
     public void LoadScene(string sceneName)
@@ -187,16 +147,16 @@ public class SceneController : Singleton<SceneController>
         switch (effect)
         {
             case TransitionEffect.FadeIn:
-                yield return StartCoroutine(Fade(0f, 1f, duration));
+                yield return ScreenFader.Instance.FadeIn(duration).WaitForCompletion();
                 break;
 
             case TransitionEffect.FadeOut:
-                yield return StartCoroutine(Fade(1f, 0f, duration));
+                yield return ScreenFader.Instance.FadeOut(duration).WaitForCompletion();
                 break;
 
             case TransitionEffect.CrossFade:
-                yield return StartCoroutine(Fade(0f, 1f, duration * 0.5f));
-                yield return StartCoroutine(Fade(1f, 0f, duration * 0.5f));
+                yield return ScreenFader.Instance.FadeOut(duration * 0.5f).WaitForCompletion();
+                yield return ScreenFader.Instance.FadeIn(duration * 0.5f).WaitForCompletion();
                 break;
 
             // TODO: Slide 계열 효과는 추후 RectTransform 애니메이션으로 구현
@@ -205,29 +165,9 @@ public class SceneController : Singleton<SceneController>
             case TransitionEffect.SlideUp:
             case TransitionEffect.SlideDown:
                 Debug.LogWarning($"[SceneController] '{effect}' 효과는 아직 구현되지 않았습니다. FadeIn/Out 으로 대체합니다.");
-                yield return StartCoroutine(Fade(0f, 1f, duration));
+                yield return ScreenFader.Instance.FadeOut(duration).WaitForCompletion();
                 break;
         }
-    }
-
-    private IEnumerator Fade(float from, float to, float duration)
-    {
-        transitionCanvasGroup.blocksRaycasts = true;
-
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            transitionCanvasGroup.alpha = Mathf.Lerp(from, to, elapsed / duration);
-            yield return null;
-        }
-
-        transitionCanvasGroup.alpha = to;
-
-        // 화면이 완전히 보이는 상태(to = 0)이면 레이캐스트 차단 해제
-        if (Mathf.Approximately(to, 0f))
-            transitionCanvasGroup.blocksRaycasts = false;
     }
 
 

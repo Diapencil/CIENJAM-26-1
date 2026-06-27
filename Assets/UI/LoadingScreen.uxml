@@ -5,6 +5,7 @@
            LoadingScreenController 가 name="loading-image", name="loading-message" 요소를 조회해 내용을 채운다.
 -->
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/LoadingScreen.uss?fileID=7433441132597879392&amp;guid=2d2947024abe88245b3eacc20630ffbd&amp;type=3#LoadingScreen" />
     <ui:VisualElement name="root" class="loading-root">
         <ui:VisualElement name="loading-image" class="loading-image" />
         <ui:Label name="loading-message" text="" class="loading-message" />

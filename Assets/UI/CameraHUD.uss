@@ -1,0 +1,64 @@
+/*
+    CameraHUD.uss
+    기능 : CameraHUD.uxml 스타일. 카메라 뷰파인더 코너 마크와 배터리 숫자 패널의 외형을 정의한다.
+    사용 : CameraHUD.uxml 의 <Style src="CameraHUD.uss" /> 로 참조된다.
+*/
+
+.hud-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* 뷰파인더 코너 마크 (ㄱ/ㄴ 형태를 두꺼운 테두리로 표현) */
+.corner {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border-color: rgba(255, 255, 255, 0.85);
+}
+
+.corner-tl {
+    left: 32px;
+    top: 32px;
+    border-left-width: 4px;
+    border-top-width: 4px;
+}
+
+.corner-tr {
+    right: 32px;
+    top: 32px;
+    border-right-width: 4px;
+    border-top-width: 4px;
+}
+
+.corner-bl {
+    left: 32px;
+    bottom: 32px;
+    border-left-width: 4px;
+    border-bottom-width: 4px;
+}
+
+.corner-br {
+    right: 32px;
+    bottom: 32px;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+}
+
+/* 배터리 숫자 패널 (우하단) */
+.battery-panel {
+    position: absolute;
+    right: 48px;
+    bottom: 48px;
+    align-items: flex-end;
+}
+
+.battery-label {
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    -unity-font-style: bold;
+    margin-top: 2px;
+}

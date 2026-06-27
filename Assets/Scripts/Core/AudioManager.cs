@@ -22,9 +22,9 @@ public class AudioManager : Singleton<AudioManager>, ISceneEventListener
     [SerializeField] AudioMixerGroup bgmGroup;
 
     // 믹서 에셋에서 동일한 이름으로 노출해야 하는 파라미터 키
-    const string MasterParam = "MasterVolume";
-    const string SfxParam = "SFXVolume";
-    const string BgmParam = "BGMVolume";
+    const string MasterParam = "MASTER";
+    const string SfxParam = "SFX";
+    const string BgmParam = "BGM";
 
     [Header("SFX")]
     [SerializeField, Range(0f, 1f)] float spatialBlend = 1f; // 0 = 2D, 1 = 3D(위치 기반)

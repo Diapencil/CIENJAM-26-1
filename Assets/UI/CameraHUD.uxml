@@ -1,0 +1,24 @@
+<!--
+    CameraHUD.uxml
+    기능 : 카메라 모드에서 표시되는 뷰파인더 형태의 HUD 레이아웃. 화면 네 모서리 코너 마크와
+           우하단 배터리 칸 수(숫자) 표시를 정의한다. (배터리는 추후 그래픽으로 교체 예정)
+    사용 : 카메라 모드 전용 UIDocument 의 Source Asset 에 지정하고, 같은 GameObject 에
+           CameraHudController 를 붙인다. 컨트롤러가 아래 name 요소를 조회해 값을 채우고
+           모드에 따라 root 표시를 토글한다.
+    주의 : 이 HUD 는 스크린 오버레이로 그려지므로, CameraSystem 의 사진 캡처(카메라 렌더)에는
+           포함되지 않는다.
+-->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="CameraHUD.uss" />
+    <ui:VisualElement name="camera-hud-root" class="hud-root">
+        <ui:VisualElement name="corner-tl" class="corner corner-tl" />
+        <ui:VisualElement name="corner-tr" class="corner corner-tr" />
+        <ui:VisualElement name="corner-bl" class="corner corner-bl" />
+        <ui:VisualElement name="corner-br" class="corner corner-br" />
+
+        <ui:VisualElement name="battery-panel" class="battery-panel">
+            <ui:Label name="battery-normal" text="일반 4/4" class="battery-label" />
+            <ui:Label name="battery-charge" text="차지 4/4" class="battery-label" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
