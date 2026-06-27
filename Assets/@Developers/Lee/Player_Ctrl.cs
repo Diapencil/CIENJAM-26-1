@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Player_Ctrl : MonoBehaviour
 {
@@ -11,9 +12,27 @@ public class Player_Ctrl : MonoBehaviour
     Camera cam;
 
     [Header("Move")]
-    public float moveSpeed;
+    [FormerlySerializedAs("moveSpeed")]
+    [UnityEngine.Range(1, 100)] public float walkSpeed = 5f; // 기본 걷기 속도
+    [UnityEngine.Range(1, 100)] public float runSpeedMultiplier = 2f;          // 달리기 시 걷기 속도의 몇 배까지 빨라질지
+    [UnityEngine.Range(1, 10)] public float runAccelerationTime = 1f;         // 몇 초에 걸쳐 최대 달리기 속도에 도달할지 (대시관성)
+    [UnityEngine.Range(1, 10)] public float runDecelerationTime = 1f;         // 몇 초에 걸쳐 걷기 속도로 돌아올지 (대시종료관성)
     float h;
     float v;
+    float runRatio;
+    float currentSpeed;
+    
+    [Header("Stamina")]
+    public float stamina;
+    [UnityEngine.Range(1, 100)] public float maxStamina = 100f;                  // 최대 스태미너
+    [UnityEngine.Range(1, 10)] public float staminaDrainPerSecond = 50f;       // 달리기 중 초당 스태미너 감소량
+    [UnityEngine.Range(1, 10)] public float staminaRecoveryDelay = 2f;        // 달리기 종료 후 몇 초 뒤 회복 시작
+    [UnityEngine.Range(1, 10)] public float staminaRecoveryPerSecond = 10f;    // 초당 스태미너 회복량
+
+    [UnityEngine.Range(1, 100)] public float exhaustedRecoveryPercent = 30f;    // 탈진 후 최대 스태미너의 몇 % 이상 회복되어야 다시 달릴 수 있는지
+    float staminaRecoveryTimer;
+    bool exhausted;
+
 
     void Start()
     {
@@ -24,12 +43,15 @@ public class Player_Ctrl : MonoBehaviour
         rb.freezeRotation = true;                   // Rigidbody의 회전을 고정하여 물리 연산에 영향을 주지 않도록 설정
 
         cam = Camera.main;                          // 메인 카메라를 할당
+        stamina = maxStamina;
+        currentSpeed = walkSpeed;
     }
 
     void Update()
     {
         Rotate();
         Move();
+        
 	}
     
     void Rotate()
@@ -50,11 +72,52 @@ public class Player_Ctrl : MonoBehaviour
     {
         h = Input.GetAxisRaw("Horizontal"); // 수평 이동 입력 값
         v = Input.GetAxisRaw("Vertical");   // 수직 이동 입력 값
+        Run();
 
         // 입력에 따라 이동 방향 벡터 계산
         Vector3 moveVec = transform.forward * v + transform.right * h;
 
         // 이동 벡터를 정규화하여 이동 속도와 시간 간격을 곱한 후 현재 위치에 더함
-        transform.position += moveVec.normalized * moveSpeed * Time.deltaTime;
+        transform.position += moveVec.normalized * currentSpeed * Time.deltaTime;
+    }
+
+    void Run()
+    {
+        //Debug.Log(stamina);
+        bool wantsRun = Input.GetKey(KeyCode.LeftShift);
+        bool canRun = wantsRun && !exhausted && stamina > 0f;
+
+        if (canRun)
+        {
+            runRatio += Time.deltaTime / Mathf.Max(runAccelerationTime, Mathf.Epsilon);
+            stamina -= staminaDrainPerSecond * Time.deltaTime;
+            staminaRecoveryTimer = staminaRecoveryDelay;
+
+            if (stamina <= 0f)
+            {
+                stamina = 0f;
+                exhausted = true;
+            }
+        }
+        else
+        {
+            runRatio -= Time.deltaTime / Mathf.Max(runDecelerationTime, Mathf.Epsilon);
+            staminaRecoveryTimer -= Time.deltaTime;
+
+            if (staminaRecoveryTimer <= 0f)
+            {
+                stamina += staminaRecoveryPerSecond * Time.deltaTime;
+            }
+        }
+
+        stamina = Mathf.Clamp(stamina, 0f, maxStamina);
+        runRatio = Mathf.Clamp01(runRatio);
+
+        if (exhausted && stamina >= maxStamina * (exhaustedRecoveryPercent * 0.01f))
+        {
+            exhausted = false;
+        }
+
+        currentSpeed = walkSpeed * Mathf.Lerp(1f, runSpeedMultiplier, runRatio);
     }
 }
