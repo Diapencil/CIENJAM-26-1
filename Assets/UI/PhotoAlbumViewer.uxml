@@ -1,0 +1,63 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/PhotoAlbumViewer.uss?fileID=7433441132597879392&amp;guid=6e79a23e95c14a0190373e412dbf7a6d&amp;type=3#PhotoAlbumViewer"/>
+    <ui:VisualElement name="album-root" class="album-root" style="display: none;">
+        <ui:VisualElement name="album-design-root" class="album-design-root">
+            <ui:VisualElement name="album-gallery-panel" class="album-panel">
+                <ui:VisualElement class="shade shade-right"/>
+                <ui:VisualElement class="shade shade-left"/>
+                <ui:VisualElement class="shade shade-top"/>
+                <ui:VisualElement class="shade shade-bottom"/>
+                <ui:VisualElement class="album-frame"/>
+                <ui:VisualElement class="mode-glow"/>
+                <ui:Label name="gallery-title" text="갤러리" class="album-title"/>
+                <ui:Label name="gallery-mode-icon" text="◖" class="mode-icon"/>
+                <ui:Label name="gallery-mode-text" text="앨범" class="mode-text"/>
+                <ui:VisualElement name="gallery-slot-0" class="gallery-slot slot-0">
+                    <ui:Image name="gallery-slot-image-0" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-1" class="gallery-slot slot-1">
+                    <ui:Image name="gallery-slot-image-1" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-2" class="gallery-slot slot-2">
+                    <ui:Image name="gallery-slot-image-2" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-3" class="gallery-slot slot-3">
+                    <ui:Image name="gallery-slot-image-3" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-4" class="gallery-slot slot-4">
+                    <ui:Image name="gallery-slot-image-4" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-5" class="gallery-slot slot-5">
+                    <ui:Image name="gallery-slot-image-5" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-6" class="gallery-slot slot-6">
+                    <ui:Image name="gallery-slot-image-6" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-7" class="gallery-slot slot-7">
+                    <ui:Image name="gallery-slot-image-7" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="gallery-slot-8" class="gallery-slot slot-8">
+                    <ui:Image name="gallery-slot-image-8" class="slot-image"/>
+                </ui:VisualElement>
+                <ui:Label name="gallery-count" text="0/9" class="gallery-count"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="album-detail-panel" class="album-panel detail-panel">
+                <ui:VisualElement class="shade shade-right"/>
+                <ui:VisualElement class="shade shade-left"/>
+                <ui:VisualElement class="shade shade-top"/>
+                <ui:VisualElement class="shade shade-bottom"/>
+                <ui:VisualElement class="album-frame"/>
+                <ui:VisualElement class="mode-glow"/>
+                <ui:VisualElement class="close-glow"/>
+                <ui:Label name="detail-title" text="갤러리" class="album-title"/>
+                <ui:Label name="detail-mode-icon" text="◖" class="mode-icon"/>
+                <ui:Label name="detail-mode-text" text="사진" class="mode-text"/>
+                <ui:Image name="album-detail-image" class="detail-image"/>
+                <ui:Label name="detail-prev" text="&lt;" class="detail-prev"/>
+                <ui:Label name="detail-next" text="&gt;" class="detail-next"/>
+                <ui:Label name="detail-count" text="0/9" class="detail-count"/>
+                <ui:Label name="detail-close" text="나가기" class="detail-close"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

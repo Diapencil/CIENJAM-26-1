@@ -1,0 +1,278 @@
+/*
+    PhotoAlbumViewer.uss
+    기능: Assets/Document/갤러리.svg 및 갤러리_사진.svg 의 1920x1080 좌표와 크기에 맞춘 앨범 UI 스타일.
+    사용: PhotoAlbumViewer.uxml 에서 참조한다. 런타임 사진 주입은 PhotoAlbumViewer.cs 가 담당한다.
+*/
+
+.album-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+.album-design-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    transform-origin: 0 0;
+}
+
+.album-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+}
+
+.detail-panel {
+    display: none;
+}
+
+.shade {
+    position: absolute;
+    background-color: rgb(0, 0, 0);
+}
+
+.shade-right {
+    left: 1620px;
+    top: 0;
+    width: 300px;
+    height: 1080px;
+}
+
+.shade-left {
+    left: 0;
+    top: 0;
+    width: 300px;
+    height: 1080px;
+    opacity: 0.75;
+}
+
+.shade-top {
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 100px;
+    opacity: 0.75;
+}
+
+.shade-bottom {
+    left: 7px;
+    top: 980px;
+    width: 1920px;
+    height: 100px;
+}
+
+.album-frame {
+    position: absolute;
+    left: 300px;
+    top: 100px;
+    width: 1320px;
+    height: 880px;
+    background-color: rgb(40, 40, 40);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.album-title {
+    position: absolute;
+    left: 902px;
+    top: 136px;
+    width: 112px;
+    height: 56px;
+    color: rgb(255, 255, 255);
+    font-size: 32px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+.mode-glow {
+    position: absolute;
+    left: 1659px;
+    top: 231px;
+    width: 91px;
+    height: 51px;
+    background-color: rgba(217, 217, 217, 0.18);
+}
+
+.mode-icon {
+    position: absolute;
+    left: 1665px;
+    top: 236px;
+    width: 31px;
+    height: 44px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 32px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.mode-text {
+    position: absolute;
+    left: 1697px;
+    top: 242px;
+    width: 43px;
+    height: 28px;
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+.gallery-slot {
+    position: absolute;
+    width: 350px;
+    height: 212.333px;
+    background-color: rgb(217, 217, 217);
+    overflow: hidden;
+}
+
+.slot-image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 350px;
+    height: 212.333px;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.slot-empty {
+    opacity: 0.28;
+}
+
+.slot-0 {
+    left: 410px;
+    top: 210px;
+}
+
+.slot-1 {
+    left: 785px;
+    top: 210px;
+}
+
+.slot-2 {
+    left: 1160px;
+    top: 210px;
+}
+
+.slot-3 {
+    left: 410px;
+    top: 447.333px;
+}
+
+.slot-4 {
+    left: 785px;
+    top: 447.333px;
+}
+
+.slot-5 {
+    left: 1160px;
+    top: 447.333px;
+}
+
+.slot-6 {
+    left: 410px;
+    top: 684.667px;
+}
+
+.slot-7 {
+    left: 785px;
+    top: 684.667px;
+}
+
+.slot-8 {
+    left: 1160px;
+    top: 684.667px;
+}
+
+.gallery-count {
+    position: absolute;
+    left: 900px;
+    top: 923px;
+    width: 120px;
+    height: 40px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 30px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+.detail-image {
+    position: absolute;
+    left: 418px;
+    top: 211px;
+    width: 1084.667px;
+    height: 657px;
+    background-color: rgb(217, 217, 217);
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.detail-prev {
+    position: absolute;
+    left: 868px;
+    top: 897px;
+    width: 54px;
+    height: 48px;
+    color: rgb(255, 255, 255);
+    font-size: 36px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.detail-next {
+    position: absolute;
+    left: 997px;
+    top: 897px;
+    width: 54px;
+    height: 48px;
+    color: rgb(255, 255, 255);
+    font-size: 36px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.detail-count {
+    position: absolute;
+    left: 910px;
+    top: 900px;
+    width: 100px;
+    height: 44px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 30px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+.close-glow {
+    position: absolute;
+    left: 1405px;
+    top: 898px;
+    width: 91px;
+    height: 42px;
+    background-color: rgba(217, 217, 217, 0.16);
+}
+
+.detail-close {
+    position: absolute;
+    left: 1405px;
+    top: 898px;
+    width: 91px;
+    height: 42px;
+    color: rgb(255, 255, 255);
+    font-size: 25px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}

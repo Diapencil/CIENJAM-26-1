@@ -1,0 +1,15 @@
+Material,HEX,Korean usage,Metallic,Smoothness,Alpha
+fujiXT3metalBright,#73776F,밝은 금속 바디 / 실버 엣지,1.0,0.55,1.0
+fujiXT3metalDark,#171A18,어두운 금속 프레임,1.0,0.42,1.0
+fujiXT3metalGlossy,#222522,유광 블랙 금속,1.0,0.75,1.0
+fujiXT3metalGlossy.001,#2F312D,스트랩 연결부 유광 금속,1.0,0.68,1.0
+fujiXT3metalRubber,#101211,고무 섞인 어두운 금속부,0.35,0.35,1.0
+fujiXT3plasticBlack,#070807,무광 검정 플라스틱 / 렌즈 외장,0.0,0.28,1.0
+fujiXT3glass,#0A1519,렌즈 유리,0.0,0.95,0.45
+screen,#07100F,후면 LCD 화면,0.0,0.8,1.0
+fujiXT3leather,#12100E,카메라 바디 가죽 텍스처부,0.0,0.18,1.0
+fujiXT3selectors,#A39D8F,다이얼/선택자 표식,1.0,0.5,1.0
+leather,#3B2719,스트랩 가죽 밝은 면,0.0,0.22,1.0
+leather2,#21160F,스트랩 가죽 어두운 면,0.0,0.18,1.0
+rope,#25231F,스트랩 로프/직물,0.0,0.12,1.0
+rubber,#0D0D0C,스트랩 고무/패드,0.0,0.2,1.0
