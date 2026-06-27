@@ -143,6 +143,11 @@ public class AudioManager : Singleton<AudioManager>, ISceneEventListener
         st.source.volume = Mathf.Clamp01(volume);
     }
 
+    public bool IsSoundPlaying(int id)
+    {
+        return _active.TryGetValue(id, out var st) && st.source != null && st.source.isPlaying;
+    }
+
     int PlaySoundInternal(string soundName, Transform sourceParent, float volume, int repeatTime, bool loop, float sourceSpatialBlend)
     {
         if (!_clips.TryGetValue(soundName, out var clip)) return -1;

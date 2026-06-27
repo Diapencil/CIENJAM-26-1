@@ -408,23 +408,12 @@ MonoBehaviour:
   bgmName: "\uAC8C\uC784 \uBC30\uACBD\uC74C\uC545"
   bgmVolume: 0.7
   player: {fileID: 0}
-  continuousFootstepName: "\uBC1C\uC18C\uB9AC \uC5F0\uC18D"
-  footstepNames:
-  - "\uBC1C\uC18C\uB9AC1"
-  - "\uBC1C\uC18C\uB9AC2"
-  - "\uBC1C\uC18C\uB9AC3"
-  - "\uBC1C\uC18C\uB9AC4"
-  - "\uBC1C\uC18C\uB9AC5"
-  - "\uBC1C\uC18C\uB9AC6"
-  - "\uBC1C\uC18C\uB9AC7"
-  - "\uBC1C\uC18C\uB9AC8"
+  walkFootstepName: "\uBC1C\uC18C\uB9AC \uC5F0\uC18D"
+  runFootstepName: "\uB2EC\uB9AC\uAE30 \uC18C\uB9AC"
   moveThreshold: 0.15
   runThreshold: 7
-  walkStepInterval: 0.5
-  runStepInterval: 0.3
-  footstepVolume: 0.58
-  continuousWalkVolume: 0
-  continuousRunVolume: 0
+  walkFootstepVolume: 0.18
+  runFootstepVolume: 0.3
   puangs: []
   puangAmbientName: "\uD478\uC559\uC774 ambient sound"
   puangStunReleaseName: "\uD478\uC559\uC774 ambient sound 2"

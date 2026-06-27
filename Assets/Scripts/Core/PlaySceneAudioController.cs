@@ -13,19 +13,12 @@ public class PlaySceneAudioController : MonoBehaviour
 
     [Header("Player Footsteps")]
     [SerializeField] private Transform player;
-    [SerializeField] private string continuousFootstepName = "발소리 연속";
-    [SerializeField] private string[] footstepNames =
-    {
-        "발소리1", "발소리2", "발소리3", "발소리4",
-        "발소리5", "발소리6", "발소리7", "발소리8"
-    };
+    [SerializeField] private string walkFootstepName = "발소리 연속";
+    [SerializeField] private string runFootstepName = "달리기 소리";
     [SerializeField] private float moveThreshold = 0.15f;
     [SerializeField] private float runThreshold = 7f;
-    [SerializeField] private float walkStepInterval = 0.5f;
-    [SerializeField] private float runStepInterval = 0.3f;
-    [SerializeField, Range(0f, 1f)] private float footstepVolume = 0.58f;
-    [SerializeField, Range(0f, 1f)] private float continuousWalkVolume = 0f;
-    [SerializeField, Range(0f, 1f)] private float continuousRunVolume = 0f;
+    [SerializeField, Range(0f, 1f)] private float walkFootstepVolume = 0.18f;
+    [SerializeField, Range(0f, 1f)] private float runFootstepVolume = 0.3f;
 
     [Header("Puangi")]
     [SerializeField] private PuangAI[] puangs;
@@ -67,13 +60,20 @@ public class PlaySceneAudioController : MonoBehaviour
     private readonly Dictionary<PuangAI, System.Action<PuangAI.PuangState>> _puangStateHandlers = new();
     private readonly Dictionary<PuangAI, System.Action> _puangCaughtHandlers = new();
 
+    private enum FootstepState
+    {
+        Stopped,
+        Walking,
+        Running
+    }
+
     private AudioManager _audio;
     private GameManager _gameManager;
+    private Player_Ctrl _playerController;
     private Vector3 _lastPlayerPosition;
-    private float _stepTimer;
     private float _lastHorrorKickTime = -999f;
-    private int _footstepLoopId = -1;
-    private int _lastFootstepIndex = -1;
+    private int _footstepId = -1;
+    private FootstepState _footstepState = FootstepState.Stopped;
     private bool _ownsAudio;
 
     private void Awake()
@@ -114,7 +114,7 @@ public class PlaySceneAudioController : MonoBehaviour
     {
         if (!_ownsAudio) return;
 
-        StopFootstepLoop();
+        SetFootstepState(FootstepState.Stopped);
         StopPuangAmbiences();
         StopSceneBGM();
         UnsubscribePuangs();
@@ -137,7 +137,10 @@ public class PlaySceneAudioController : MonoBehaviour
         {
             var playerController = FindAnyObjectByType<Player_Ctrl>();
             if (playerController != null)
+            {
+                _playerController = playerController;
                 player = playerController.transform;
+            }
             else
             {
                 var taggedPlayer = GameObject.FindGameObjectWithTag("Player");
@@ -145,6 +148,9 @@ public class PlaySceneAudioController : MonoBehaviour
                     player = taggedPlayer.transform;
             }
         }
+
+        if (_playerController == null && player != null)
+            _playerController = player.GetComponent<Player_Ctrl>();
 
         if (puangs == null || puangs.Length == 0)
             puangs = FindObjectsByType<PuangAI>(FindObjectsInactive.Exclude);
@@ -264,24 +270,7 @@ public class PlaySceneAudioController : MonoBehaviour
         float speed = Vector3.Distance(current, previous) / Time.deltaTime;
         _lastPlayerPosition = player.position;
 
-        bool moving = IsGameplayPhase() && speed >= moveThreshold;
-        if (!moving)
-        {
-            StopFootstepLoop();
-            _stepTimer = 0f;
-            return;
-        }
-
-        float runRatio = Mathf.InverseLerp(moveThreshold, runThreshold, speed);
-        float stepInterval = speed >= runThreshold ? runStepInterval : walkStepInterval;
-        UpdateFootstepLoop(runRatio);
-
-        _stepTimer -= Time.deltaTime;
-        if (_stepTimer > 0f)
-            return;
-
-        PlayFootstepVariant(runRatio);
-        _stepTimer = stepInterval;
+        SetFootstepState(GetFootstepState(speed));
     }
 
     private bool IsGameplayPhase()
@@ -292,44 +281,87 @@ public class PlaySceneAudioController : MonoBehaviour
         return _gameManager.CurrentPhase == GamePhase.Playing || _gameManager.CurrentPhase == GamePhase.Escaping;
     }
 
-    private void UpdateFootstepLoop(float runRatio)
+    private FootstepState GetFootstepState(float speed)
     {
-        float loopVolume = Mathf.Lerp(continuousWalkVolume, continuousRunVolume, runRatio);
-        if (string.IsNullOrEmpty(continuousFootstepName) || loopVolume <= 0f)
+        if (!IsGameplayPhase())
+            return FootstepState.Stopped;
+
+        if (_playerController != null)
         {
-            StopFootstepLoop();
-            return;
+            if (!_playerController.HasMoveInput)
+                return FootstepState.Stopped;
+
+            return _playerController.IsRunning ? FootstepState.Running : FootstepState.Walking;
         }
 
-        EnsureFootstepLoop(loopVolume);
+        if (speed < moveThreshold)
+            return FootstepState.Stopped;
+
+        return speed >= runThreshold ? FootstepState.Running : FootstepState.Walking;
     }
 
-    private void EnsureFootstepLoop(float volume)
+    private void SetFootstepState(FootstepState nextState)
     {
-        if (_footstepLoopId < 0)
-            _footstepLoopId = _audio.PlayLoopingSound(continuousFootstepName, player, volume);
-        else
-            _audio.SetSoundVolume(_footstepLoopId, volume);
+        if (_footstepState == nextState)
+        {
+            if (nextState != FootstepState.Stopped && !IsFootstepPlaying())
+            {
+                _footstepId = -1;
+                _footstepState = FootstepState.Stopped;
+            }
+            else
+            {
+                UpdateFootstepVolume(nextState);
+                return;
+            }
+        }
+
+        StopFootstep();
+        _footstepState = nextState;
+
+        if (nextState == FootstepState.Stopped)
+            return;
+
+        string soundName = GetFootstepName(nextState);
+        if (string.IsNullOrEmpty(soundName))
+            return;
+
+        _footstepId = _audio.PlayLoopingSound(soundName, player, GetFootstepVolume(nextState));
     }
 
-    private void StopFootstepLoop()
+    private bool IsFootstepPlaying()
     {
-        if (_audio == null || _footstepLoopId < 0) return;
-        _audio.StopSound(_footstepLoopId);
-        _footstepLoopId = -1;
+        if (_audio == null || _footstepId < 0)
+            return false;
+
+        return _audio.IsSoundPlaying(_footstepId);
     }
 
-    private void PlayFootstepVariant(float runRatio)
+    private void UpdateFootstepVolume(FootstepState state)
     {
-        if (footstepNames == null || footstepNames.Length == 0) return;
+        if (_audio == null || _footstepId < 0 || state == FootstepState.Stopped)
+            return;
 
-        int index = Random.Range(0, footstepNames.Length);
-        if (footstepNames.Length > 1 && index == _lastFootstepIndex)
-            index = (index + 1) % footstepNames.Length;
+        _audio.SetSoundVolume(_footstepId, GetFootstepVolume(state));
+    }
 
-        _lastFootstepIndex = index;
-        float volume = Mathf.Lerp(footstepVolume * 0.85f, footstepVolume, runRatio);
-        _audio.PlaySound(footstepNames[index], player, volume);
+    private string GetFootstepName(FootstepState state)
+    {
+        return state == FootstepState.Running ? runFootstepName : walkFootstepName;
+    }
+
+    private float GetFootstepVolume(FootstepState state)
+    {
+        return state == FootstepState.Running ? runFootstepVolume : walkFootstepVolume;
+    }
+
+    private void StopFootstep()
+    {
+        if (_audio != null && _footstepId >= 0)
+            _audio.StopSound(_footstepId);
+
+        _footstepId = -1;
+        _footstepState = FootstepState.Stopped;
     }
 
     private void OnPuangStateChanged(PuangAI puang, PuangAI.PuangState state)
@@ -438,7 +470,7 @@ public class PlaySceneAudioController : MonoBehaviour
     private void OnPhaseChanged(GamePhase phase)
     {
         if (phase is GamePhase.Ending or GamePhase.Cleared)
-            StopFootstepLoop();
+            SetFootstepState(FootstepState.Stopped);
     }
 
     private void OnCameraShot(Vector3 flashPosition, float range)
