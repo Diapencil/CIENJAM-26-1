@@ -10,6 +10,7 @@ public class Player_Ctrl : MonoBehaviour
     float yRotation;
     float xRotation;
     Camera cam;
+    Vector3 standCameraLocalPosition;
 
     [Header("Move")]
     [FormerlySerializedAs("moveSpeed")]
@@ -33,6 +34,16 @@ public class Player_Ctrl : MonoBehaviour
     float staminaRecoveryTimer;
     bool exhausted;
 
+    [Header("Sit")]
+    [Range(0.1f, 2f)] public float sitColliderHeight = 1f;
+    public float sitCameraYOffset = -0.8f;
+    [Range(1f, 30f)] public float sitTransitionSpeed = 10f;
+    [Range(0.1f, 1f)] public float sitSpeedMultiplier = 0.5f;
+    CapsuleCollider capsuleCollider;
+    float standColliderHeight;
+    Vector3 standColliderCenter;
+    bool isSitting;
+    float sitSpeedRatio;
 
     void Start()
     {
@@ -43,6 +54,18 @@ public class Player_Ctrl : MonoBehaviour
         rb.freezeRotation = true;                   // Rigidbody의 회전을 고정하여 물리 연산에 영향을 주지 않도록 설정
 
         cam = Camera.main;                          // 메인 카메라를 할당
+        if (cam != null)
+        {
+            standCameraLocalPosition = cam.transform.localPosition;
+        }
+
+        capsuleCollider = GetComponent<CapsuleCollider>();
+        if (capsuleCollider != null)
+        {
+            standColliderHeight = capsuleCollider.height;
+            standColliderCenter = capsuleCollider.center;
+        }
+
         stamina = maxStamina;
         currentSpeed = walkSpeed;
     }
@@ -50,6 +73,7 @@ public class Player_Ctrl : MonoBehaviour
     void Update()
     {
         Rotate();
+        Sit();
         Move();
         
 	}
@@ -72,13 +96,14 @@ public class Player_Ctrl : MonoBehaviour
     {
         h = Input.GetAxisRaw("Horizontal"); // 수평 이동 입력 값
         v = Input.GetAxisRaw("Vertical");   // 수직 이동 입력 값
-        Run();
+        if (!isSitting)
+            Run();
 
         // 입력에 따라 이동 방향 벡터 계산
         Vector3 moveVec = transform.forward * v + transform.right * h;
 
         // 이동 벡터를 정규화하여 이동 속도와 시간 간격을 곱한 후 현재 위치에 더함
-        transform.position += moveVec.normalized * currentSpeed * Time.deltaTime;
+        transform.position += moveVec.normalized * currentSpeed * sitSpeedRatio * Time.deltaTime;
     }
 
     void Run()
@@ -117,7 +142,35 @@ public class Player_Ctrl : MonoBehaviour
         {
             exhausted = false;
         }
-
+        
         currentSpeed = walkSpeed * Mathf.Lerp(1f, runSpeedMultiplier, runRatio);
+    }
+
+    void Sit()
+    {
+        isSitting = Input.GetKey(KeyCode.C);
+        float lerpSpeed = sitTransitionSpeed * Time.deltaTime;
+
+        if (cam != null)
+        {
+            Vector3 sitCameraLocalPosition = standCameraLocalPosition + Vector3.up * sitCameraYOffset;
+            Vector3 targetCameraLocalPosition = isSitting ? sitCameraLocalPosition : standCameraLocalPosition;
+
+            cam.transform.localPosition = Vector3.Lerp(cam.transform.localPosition, targetCameraLocalPosition, lerpSpeed);
+        }
+
+        if (capsuleCollider == null)
+        {
+            return;
+        }
+
+        float targetHeight = isSitting ? Mathf.Max(sitColliderHeight, capsuleCollider.radius * 2f) : standColliderHeight;
+        Vector3 targetCenter = standColliderCenter;
+        targetCenter.y -= (standColliderHeight - targetHeight) * 0.5f;
+
+        capsuleCollider.height = Mathf.Lerp(capsuleCollider.height, targetHeight, lerpSpeed);
+        capsuleCollider.center = Vector3.Lerp(capsuleCollider.center, targetCenter, lerpSpeed);
+
+        sitSpeedRatio = isSitting ? sitSpeedMultiplier : 1f;
     }
 }
