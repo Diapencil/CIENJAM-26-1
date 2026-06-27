@@ -8,7 +8,7 @@ public class PlaySceneAudioController : MonoBehaviour
 
     [Header("BGM")]
     [SerializeField] private string bgmName = "게임 배경음악";
-    [SerializeField, Range(0f, 1f)] private float bgmVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.7f;
 
     [Header("Player Footsteps")]
     [SerializeField] private Transform player;
@@ -32,12 +32,12 @@ public class PlaySceneAudioController : MonoBehaviour
     [SerializeField] private string puangStunReleaseName = "푸앙이 ambient sound 2";
     [SerializeField] private string puangStunName = "푸앙이 스턴";
     [SerializeField] private float puangAudibleRadius = 15f;
-    [SerializeField, Range(0f, 1f)] private float puangIdleAmbientVolume = 0.825f;
-    [SerializeField, Range(0f, 1f)] private float puangCuriousAmbientVolume = 1f;
-    [SerializeField, Range(0f, 1f)] private float puangChaseAmbientVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float puangIdleAmbientVolume = 0.5775f;
+    [SerializeField, Range(0f, 1f)] private float puangCuriousAmbientVolume = 0.7f;
+    [SerializeField, Range(0f, 1f)] private float puangChaseAmbientVolume = 0.7f;
     [SerializeField, Range(0f, 1f)] private float puangStunVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float puangStunBoostVolume = 0.5f;
-    [SerializeField, Range(0f, 1f)] private float puangStunReleaseVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float puangStunReleaseVolume = 0.7f;
     [SerializeField] private float puangAmbientGap = 2f;
 
     [Header("Horror Cue")]

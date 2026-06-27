@@ -406,7 +406,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlaySceneAudioController
   bgmName: "\uAC8C\uC784 \uBC30\uACBD\uC74C\uC545"
-  bgmVolume: 1
+  bgmVolume: 0.7
   player: {fileID: 0}
   continuousFootstepName: "\uBC1C\uC18C\uB9AC \uC5F0\uC18D"
   footstepNames:
@@ -430,12 +430,12 @@ MonoBehaviour:
   puangStunReleaseName: "\uD478\uC559\uC774 ambient sound 2"
   puangStunName: "\uD478\uC559\uC774 \uC2A4\uD134"
   puangAudibleRadius: 15
-  puangIdleAmbientVolume: 0.825
-  puangCuriousAmbientVolume: 1
-  puangChaseAmbientVolume: 1
+  puangIdleAmbientVolume: 0.5775
+  puangCuriousAmbientVolume: 0.7
+  puangChaseAmbientVolume: 0.7
   puangStunVolume: 1
   puangStunBoostVolume: 0.5
-  puangStunReleaseVolume: 1
+  puangStunReleaseVolume: 0.7
   puangAmbientGap: 2
   horrorKickName: 
   horrorKickVolume: 0.78
