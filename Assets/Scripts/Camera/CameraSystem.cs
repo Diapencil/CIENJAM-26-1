@@ -64,8 +64,12 @@ public class CameraSystem : MonoBehaviour
     [Header("연출")]
     [Tooltip("촬영 순간 점등할 플래시 Light")]
     [SerializeField] private Light flashLight;
-    [Tooltip("플래시 라이트 점등 유지 시간(초)")]
-    [SerializeField] private float flashLightDuration = 0.08f;
+    [Tooltip("예비 플래시 점등 시간(초)")]
+    [SerializeField] private float firstFlashDuration = 0.3f;
+    [Tooltip("예비 플래시 후 실제 촬영 플래시까지 대기 시간(초)")]
+    [SerializeField] private float flashGapDuration = 0.2f;
+    [Tooltip("실제 촬영 플래시 점등 시간(초)")]
+    [SerializeField] private float secondFlashDuration = 0.05f;
 
     // ── 상태 ───────────────────────────────────────────────
     private int _normalSlots;
@@ -113,6 +117,11 @@ public class CameraSystem : MonoBehaviour
             UserInput.Instance.RemoveMouseListener(MouseButton.Left, KeyPhase.Down, OnLeftDown);
             UserInput.Instance.RemoveMouseListener(MouseButton.Left, KeyPhase.Up, OnLeftUp);
         }
+
+        StopAllCoroutines();
+        SetFlashLight(false);
+        _charging = false;
+        _isFlashing = false;
     }
 
     // ── 입력 처리 ───────────────────────────────────────────
@@ -167,9 +176,14 @@ public class CameraSystem : MonoBehaviour
     {
         _isFlashing = true;
 
-        if (flashLight != null) flashLight.enabled = true;
-        yield return null; // 라이트 적용된 프레임으로 렌더되도록 1프레임 대기
+        SetFlashLight(true);
+        yield return new WaitForSeconds(Mathf.Max(0f, firstFlashDuration));
 
+        SetFlashLight(false);
+        yield return new WaitForSeconds(Mathf.Max(0f, flashGapDuration));
+
+        SetFlashLight(true);
+        yield return null; // 라이트 적용된 프레임으로 렌더되도록 1프레임 대기
         CapturePhoto();          // 플래시로 밝아진 장면을 사진으로 저장
         StunTargetInView(range, stunDuration); // 스턴 대상만 감지
 
@@ -179,10 +193,15 @@ public class CameraSystem : MonoBehaviour
             : transform.position;
         OnFlashFired?.Invoke(flashPos, range);
 
-        yield return new WaitForSeconds(flashLightDuration);
-        if (flashLight != null) flashLight.enabled = false;
+        yield return new WaitForSeconds(Mathf.Max(0f, secondFlashDuration));
+        SetFlashLight(false);
 
         _isFlashing = false;
+    }
+
+    private void SetFlashLight(bool enabled)
+    {
+        if (flashLight != null) flashLight.enabled = enabled;
     }
 
     // ── 촬영(캡처) ──────────────────────────────────────────
@@ -238,27 +257,102 @@ public class CameraSystem : MonoBehaviour
 
         // 판정 기준점: 콜라이더 중심(없으면 transform 위치)
         Vector3 camPos = cam.transform.position;
-        Vector3 targetPos = puang.TryGetComponent<Collider>(out var col) ? col.bounds.center : puang.transform.position;
+        Bounds targetBounds = GetTargetBounds(puang);
+        Vector3 targetPos = targetBounds.center;
 
         // 1) 거리
         if (Vector3.Distance(camPos, targetPos) > range) return;
 
         // 2) 화면 안(프러스텀): 뷰포트 0~1 범위 + 카메라 앞(z>0)
-        Vector3 vp = cam.WorldToViewportPoint(targetPos);
-        if (vp.z <= 0f || vp.x < 0f || vp.x > 1f || vp.y < 0f || vp.y > 1f) return;
+        if (!TryGetVisibleTargetPoint(cam, puang.transform, targetBounds, out targetPos)) return;
 
         // 3) 장애물 차단: 카메라→대상 사이에 푸앙이가 아닌 콜라이더가 막으면 실패
-        if (Physics.Linecast(camPos, targetPos, out RaycastHit hit, occlusionMask, QueryTriggerInteraction.Ignore))
-        {
-            Transform t = hit.collider.transform;
-            bool hitIsPuang = t == puang.transform || t.IsChildOf(puang.transform);
-            if (!hitIsPuang) return;
-        }
-
         target.OnFlashStunned(stunDuration);
     }
 
     // ── 배터리 갱신 ─────────────────────────────────────────
+    private Bounds GetTargetBounds(GameObject target)
+    {
+        bool hasBounds = false;
+        Bounds bounds = new Bounds(target.transform.position, Vector3.zero);
+
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers)
+        {
+            if (r == null || !r.enabled) continue;
+            if (!hasBounds)
+            {
+                bounds = r.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(r.bounds);
+            }
+        }
+
+        Collider[] colliders = target.GetComponentsInChildren<Collider>();
+        foreach (Collider c in colliders)
+        {
+            if (c == null || !c.enabled) continue;
+            if (!hasBounds)
+            {
+                bounds = c.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(c.bounds);
+            }
+        }
+
+        return bounds;
+    }
+
+    private bool TryGetVisibleTargetPoint(Camera cam, Transform targetRoot, Bounds bounds, out Vector3 visiblePoint)
+    {
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+        Vector3[] points =
+        {
+            center,
+            center + new Vector3( extents.x,  extents.y,  extents.z),
+            center + new Vector3( extents.x,  extents.y, -extents.z),
+            center + new Vector3( extents.x, -extents.y,  extents.z),
+            center + new Vector3( extents.x, -extents.y, -extents.z),
+            center + new Vector3(-extents.x,  extents.y,  extents.z),
+            center + new Vector3(-extents.x,  extents.y, -extents.z),
+            center + new Vector3(-extents.x, -extents.y,  extents.z),
+            center + new Vector3(-extents.x, -extents.y, -extents.z),
+        };
+
+        foreach (Vector3 point in points)
+        {
+            if (!IsInViewport(cam, point)) continue;
+            if (!HasLineOfSight(cam.transform.position, point, targetRoot)) continue;
+            visiblePoint = point;
+            return true;
+        }
+
+        visiblePoint = center;
+        return false;
+    }
+
+    private static bool IsInViewport(Camera cam, Vector3 worldPoint)
+    {
+        Vector3 vp = cam.WorldToViewportPoint(worldPoint);
+        return vp.z > 0f && vp.x >= 0f && vp.x <= 1f && vp.y >= 0f && vp.y <= 1f;
+    }
+
+    private bool HasLineOfSight(Vector3 from, Vector3 to, Transform targetRoot)
+    {
+        if (!Physics.Linecast(from, to, out RaycastHit hit, occlusionMask, QueryTriggerInteraction.Ignore))
+            return true;
+
+        Transform hitTransform = hit.collider.transform;
+        return hitTransform == targetRoot || hitTransform.IsChildOf(targetRoot);
+    }
+
     private void SetNormalSlots(int value)
     {
         _normalSlots = Mathf.Clamp(value, 0, normalMax);

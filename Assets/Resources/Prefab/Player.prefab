@@ -72,7 +72,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 55
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -478,6 +478,10 @@ MonoBehaviour:
   staminaRecoveryDelay: 2
   staminaRecoveryPerSecond: 10
   exhaustedRecoveryPercent: 30
+  sitColliderHeight: 1
+  sitCameraYOffset: -0.8
+  sitTransitionSpeed: 10
+  sitSpeedMultiplier: 0.5
 --- !u!54 &295623914666724015
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -525,16 +529,18 @@ MonoBehaviour:
   chargeFlashCost: 1
   normalRange: 5
   chargeRange: 8
-  normalStunDuration: 1
+  normalStunDuration: 3
   chargeStunDuration: 3
   puangTag: Puang
   occlusionMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 1
   chargeHoldTime: 2
   shutterCooldown: 2
   flashLight: {fileID: 1650580550510843555}
-  flashLightDuration: 0.08
+  firstFlashDuration: 0.3
+  flashGapDuration: 0.2
+  secondFlashDuration: 0.05
 --- !u!1 &6299566778872590811
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,8 +700,8 @@ Light:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 50
   m_Range: 10
-  m_SpotAngle: 110.28677
-  m_InnerSpotAngle: 102.088844
+  m_SpotAngle: 179
+  m_InnerSpotAngle: 120
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
     m_Type: 0
@@ -838,6 +844,14 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 646c15c5eaf1a7a4f824cd59ebbe9529, type: 3}
       propertyPath: m_Name
       value: camara_unity_low
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 646c15c5eaf1a7a4f824cd59ebbe9529, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 646c15c5eaf1a7a4f824cd59ebbe9529, type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

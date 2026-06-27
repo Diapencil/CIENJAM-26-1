@@ -29,6 +29,12 @@ public class Interactable : MonoBehaviour
     [Header("Outline")]
     [SerializeField] bool disableHighlightOnInteract;
 
+    [Header("Monologue")]
+    [SerializeField] MonologueSO monologue;
+    [SerializeField, TextArea(2, 6)] string monologueText;
+    [SerializeField] float monologueHoldSeconds = -1f;
+    [SerializeField] bool queueMonologue = true;
+
     [Header("Events")]
     [SerializeField] UnityEvent onInteract;
 
@@ -70,6 +76,7 @@ public class Interactable : MonoBehaviour
     {
         if (!CanInteract) return;
 
+        PlayMonologue();
         onInteract?.Invoke();
 
         if (disableHighlightOnInteract)
@@ -81,6 +88,20 @@ public class Interactable : MonoBehaviour
 
         if (interactOnce)
             hasInteracted = true;
+    }
+
+    void PlayMonologue()
+    {
+        bool hasAsset = monologue != null;
+        bool hasText = !string.IsNullOrWhiteSpace(monologueText);
+        if (!hasAsset && !hasText) return;
+
+        var manager = MonologueManager.GetOrCreate();
+
+        if (hasAsset)
+            manager.Show(monologue, queueMonologue);
+        else
+            manager.Show(monologueText, monologueHoldSeconds, queueMonologue);
     }
 
     void OnDrawGizmosSelected()

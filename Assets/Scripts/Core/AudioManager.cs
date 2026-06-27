@@ -73,6 +73,9 @@ public class AudioManager : Singleton<AudioManager>, ISceneEventListener
     new void Awake()
     {
         base.Awake();
+        if (AudioManager.Instance != this)
+            return;
+
         _poolParent = transform;
 
         LoadAllSounds();
@@ -121,20 +124,46 @@ public class AudioManager : Singleton<AudioManager>, ISceneEventListener
     // repeatTime: 재생 횟수(최소 1). 반환 id 로 StopSound 가능.
     public int PlaySound(string soundName, Transform sourceParent, float volume = 1f, int repeatTime = 1)
     {
+        return PlaySoundInternal(soundName, sourceParent, volume, repeatTime, false, spatialBlend);
+    }
+
+    public int PlayLoopingSound(string soundName, Transform sourceParent, float volume = 1f)
+    {
+        return PlaySoundInternal(soundName, sourceParent, volume, 1, true, spatialBlend);
+    }
+
+    public int PlayGlobalSound(string soundName, float volume = 1f, int repeatTime = 1)
+    {
+        return PlaySoundInternal(soundName, _poolParent, volume, repeatTime, false, 0f);
+    }
+
+    public void SetSoundVolume(int id, float volume)
+    {
+        if (!_active.TryGetValue(id, out var st) || st.source == null) return;
+        st.source.volume = Mathf.Clamp01(volume);
+    }
+
+    int PlaySoundInternal(string soundName, Transform sourceParent, float volume, int repeatTime, bool loop, float sourceSpatialBlend)
+    {
         if (!_clips.TryGetValue(soundName, out var clip)) return -1;
 
         var ch = GetChannel();
         if (ch == null) return -1;
 
-        ch.transform.SetParent(sourceParent, false);
+        var parent = sourceParent != null ? sourceParent : _poolParent;
+        ch.transform.SetParent(parent, false);
         ch.transform.localPosition = Vector3.zero;
         ch.clip = clip;
         ch.volume = Mathf.Clamp01(volume);
-        ch.loop = false;
+        ch.loop = loop;
+        ch.spatialBlend = Mathf.Clamp01(sourceSpatialBlend);
+        ch.rolloffMode = AudioRolloffMode.Linear;
+        ch.minDistance = minDistance;
+        ch.maxDistance = maxDistance;
         ch.Play();
 
         int id = _nextId++;
-        _active[id] = new ChannelState { source = ch, remaining = Mathf.Max(1, repeatTime) };
+        _active[id] = new ChannelState { source = ch, remaining = loop ? int.MaxValue : Mathf.Max(1, repeatTime) };
         return id;
     }
 
@@ -180,6 +209,7 @@ public class AudioManager : Singleton<AudioManager>, ISceneEventListener
         {
             st.source.Stop();
             st.source.clip = null;
+            st.source.loop = false;
             st.source.transform.SetParent(_poolParent, false);
             st.source.gameObject.SetActive(false);
         }
