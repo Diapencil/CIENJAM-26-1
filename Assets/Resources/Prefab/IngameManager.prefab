@@ -510,11 +510,11 @@ MonoBehaviour:
   - "\uBC1C\uC18C\uB9AC8"
   moveThreshold: 0.15
   runThreshold: 7
-  walkStepInterval: 0.46
-  runStepInterval: 0.28
+  walkStepInterval: 0.5
+  runStepInterval: 0.3
   footstepVolume: 0.58
-  continuousWalkVolume: 0.18
-  continuousRunVolume: 0.3
+  continuousWalkVolume: 0
+  continuousRunVolume: 0
   puangs: []
   puangAmbientName: "\uD478\uC559\uC774 ambient sound"
   puangStunReleaseName: "\uD478\uC559\uC774 ambient sound 2"

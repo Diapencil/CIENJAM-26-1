@@ -21,11 +21,11 @@ public class PlaySceneAudioController : MonoBehaviour
     };
     [SerializeField] private float moveThreshold = 0.15f;
     [SerializeField] private float runThreshold = 7f;
-    [SerializeField] private float walkStepInterval = 0.46f;
-    [SerializeField] private float runStepInterval = 0.28f;
+    [SerializeField] private float walkStepInterval = 0.5f;
+    [SerializeField] private float runStepInterval = 0.3f;
     [SerializeField, Range(0f, 1f)] private float footstepVolume = 0.58f;
-    [SerializeField, Range(0f, 1f)] private float continuousWalkVolume = 0.18f;
-    [SerializeField, Range(0f, 1f)] private float continuousRunVolume = 0.30f;
+    [SerializeField, Range(0f, 1f)] private float continuousWalkVolume = 0f;
+    [SerializeField, Range(0f, 1f)] private float continuousRunVolume = 0f;
 
     [Header("Puangi")]
     [SerializeField] private PuangAI[] puangs;
@@ -273,15 +273,15 @@ public class PlaySceneAudioController : MonoBehaviour
         }
 
         float runRatio = Mathf.InverseLerp(moveThreshold, runThreshold, speed);
-        float loopVolume = Mathf.Lerp(continuousWalkVolume, continuousRunVolume, runRatio);
-        EnsureFootstepLoop(loopVolume);
+        float stepInterval = speed >= runThreshold ? runStepInterval : walkStepInterval;
+        UpdateFootstepLoop(runRatio);
 
         _stepTimer -= Time.deltaTime;
         if (_stepTimer > 0f)
             return;
 
         PlayFootstepVariant(runRatio);
-        _stepTimer = Mathf.Lerp(walkStepInterval, runStepInterval, runRatio);
+        _stepTimer = stepInterval;
     }
 
     private bool IsGameplayPhase()
@@ -290,6 +290,18 @@ public class PlaySceneAudioController : MonoBehaviour
             return true;
 
         return _gameManager.CurrentPhase == GamePhase.Playing || _gameManager.CurrentPhase == GamePhase.Escaping;
+    }
+
+    private void UpdateFootstepLoop(float runRatio)
+    {
+        float loopVolume = Mathf.Lerp(continuousWalkVolume, continuousRunVolume, runRatio);
+        if (string.IsNullOrEmpty(continuousFootstepName) || loopVolume <= 0f)
+        {
+            StopFootstepLoop();
+            return;
+        }
+
+        EnsureFootstepLoop(loopVolume);
     }
 
     private void EnsureFootstepLoop(float volume)

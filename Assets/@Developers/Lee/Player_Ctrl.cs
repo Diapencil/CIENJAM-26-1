@@ -6,10 +6,10 @@ public class Player_Ctrl : MonoBehaviour
     Rigidbody rb;
 
     [Header("Rotate")]
-    public float mouseSpeed;
+    public float mouseSpeed = 2f;
+    [SerializeField] Camera cam;
     float yRotation;
     float xRotation;
-    Camera cam;
     Vector3 standCameraLocalPosition;
 
     [Header("Move")]
@@ -43,23 +43,28 @@ public class Player_Ctrl : MonoBehaviour
     float standColliderHeight;
     Vector3 standColliderCenter;
     bool isSitting;
-    float sitSpeedRatio;
+    float sitSpeedRatio = 1f;
 
     private void OnEnable()
     {
         CursorStateController.RequestLocked(this);
     }
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();             // Rigidbody 컴포넌트 가져오기
-        rb.freezeRotation = true;                   // Rigidbody의 회전을 고정하여 물리 연산에 영향을 주지 않도록 설정
+        if (rb != null)
+        {
+            rb.freezeRotation = true;               // Rigidbody의 회전을 고정하여 물리 연산에 영향을 주지 않도록 설정
+        }
 
-        cam = Camera.main;                          // 메인 카메라를 할당
+        cam = ResolveCamera();
         if (cam != null)
         {
             standCameraLocalPosition = cam.transform.localPosition;
+            xRotation = ClampPitch(NormalizeAngle(cam.transform.localEulerAngles.x));
         }
+        yRotation = transform.eulerAngles.y;
 
         capsuleCollider = GetComponent<CapsuleCollider>();
         if (capsuleCollider != null)
@@ -79,32 +84,48 @@ public class Player_Ctrl : MonoBehaviour
 
     void Update()
     {
+        ReadMoveInput();
         Rotate();
         Sit();
+        Run(!isSitting);
+    }
+
+    void FixedUpdate()
+    {
         Move();
-        
-	}
+    }
     
     void Rotate()
     {
-        float mouseX = Input.GetAxisRaw("Mouse X") * mouseSpeed * Time.deltaTime;
-        float mouseY = Input.GetAxisRaw("Mouse Y") * mouseSpeed * Time.deltaTime;
+        if (cam == null)
+        {
+            return;
+        }
+
+        float mouseX = Input.GetAxisRaw("Mouse X") * mouseSpeed;
+        float mouseY = Input.GetAxisRaw("Mouse Y") * mouseSpeed;
 
         yRotation += mouseX;    // 마우스 X축 입력에 따라 수평 회전 값을 조정
         xRotation -= mouseY;    // 마우스 Y축 입력에 따라 수직 회전 값을 조정
 
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);  // 수직 회전 값을 -90도에서 90도 사이로 제한
+        xRotation = ClampPitch(xRotation);  // 수직 회전 값을 -90도에서 90도 사이로 제한
 
         cam.transform.localRotation = Quaternion.Euler(xRotation, 0, 0); // 카메라의 회전을 조절
         transform.rotation = Quaternion.Euler(0, yRotation, 0);             // 플레이어 캐릭터의 회전을 조절
     }
 
-    void Move()
+    void ReadMoveInput()
     {
         h = Input.GetAxisRaw("Horizontal"); // 수평 이동 입력 값
         v = Input.GetAxisRaw("Vertical");   // 수직 이동 입력 값
-        if (!isSitting)
-            Run();
+    }
+
+    void Move()
+    {
+        if (rb == null)
+        {
+            return;
+        }
 
         // 입력에 따라 이동 방향 벡터 계산
         Vector3 moveVec = transform.forward * v + transform.right * h;
@@ -114,10 +135,10 @@ public class Player_Ctrl : MonoBehaviour
         rb.linearVelocity = new Vector3(horizontalVelocity.x, rb.linearVelocity.y, horizontalVelocity.z);
     }
 
-    void Run()
+    void Run(bool canTryRun)
     {
         //Debug.Log(stamina);
-        bool wantsRun = Input.GetKey(KeyCode.LeftShift);
+        bool wantsRun = canTryRun && Input.GetKey(KeyCode.LeftShift) && (h != 0f || v != 0f);
         bool canRun = wantsRun && !exhausted && stamina > 0f;
 
         if (canRun)
@@ -180,5 +201,39 @@ public class Player_Ctrl : MonoBehaviour
         capsuleCollider.center = Vector3.Lerp(capsuleCollider.center, targetCenter, lerpSpeed);
 
         sitSpeedRatio = isSitting ? sitSpeedMultiplier : 1f;
+    }
+
+    Camera ResolveCamera()
+    {
+        if (cam != null)
+        {
+            return cam;
+        }
+
+        Camera[] childCameras = GetComponentsInChildren<Camera>(true);
+        foreach (Camera childCamera in childCameras)
+        {
+            if (childCamera.CompareTag("MainCamera"))
+            {
+                return childCamera;
+            }
+        }
+
+        return Camera.main;
+    }
+
+    static float NormalizeAngle(float angle)
+    {
+        angle %= 360f;
+        if (angle > 180f)
+        {
+            angle -= 360f;
+        }
+        return angle;
+    }
+
+    static float ClampPitch(float pitch)
+    {
+        return Mathf.Clamp(pitch, -90f, 90f);
     }
 }
