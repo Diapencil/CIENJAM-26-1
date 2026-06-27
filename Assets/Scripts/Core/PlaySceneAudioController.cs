@@ -8,7 +8,7 @@ public class PlaySceneAudioController : MonoBehaviour
 
     [Header("BGM")]
     [SerializeField] private string bgmName = "게임 배경음악";
-    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.1f;
+    [SerializeField, Range(0f, 1f)] private float bgmVolume = 1f;
 
     [Header("Player Footsteps")]
     [SerializeField] private Transform player;
@@ -41,7 +41,7 @@ public class PlaySceneAudioController : MonoBehaviour
     [SerializeField] private float puangAmbientGap = 2f;
 
     [Header("Horror Cue")]
-    [SerializeField] private string horrorKickName = "호러 사운드 킥";
+    [SerializeField] private string horrorKickName = "";
     [SerializeField, Range(0f, 1f)] private float horrorKickVolume = 0.78f;
     [SerializeField] private float horrorKickCooldown = 3f;
 
@@ -381,7 +381,7 @@ public class PlaySceneAudioController : MonoBehaviour
 
     private void PlayHorrorKick()
     {
-        if (_audio == null || Time.time < _lastHorrorKickTime + horrorKickCooldown)
+        if (_audio == null || string.IsNullOrEmpty(horrorKickName) || Time.time < _lastHorrorKickTime + horrorKickCooldown)
             return;
 
         _lastHorrorKickTime = Time.time;
