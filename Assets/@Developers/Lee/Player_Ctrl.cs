@@ -39,6 +39,7 @@ public class Player_Ctrl : MonoBehaviour
     bool exhausted;
 
     [Header("Sit")]
+    [Range(0f, 0.5f)] public float standUpCheckSkin = 0.05f; // 머리 위 검사 시 벽 긁힘 방지용 반경 여유
     [Range(0.1f, 2f)] public float sitColliderHeight = 1f;
     public float sitCameraYOffset = -0.8f;
     [Range(1f, 30f)] public float sitTransitionSpeed = 10f;
@@ -183,7 +184,18 @@ public class Player_Ctrl : MonoBehaviour
 
     void Sit()
     {
-        isSitting = Input.GetKey(KeyCode.C);
+        bool holdSit = Input.GetKey(KeyCode.C);
+
+        // C키를 떼서 일어나려 해도, 머리 위에 장애물이 있으면 앉은 상태를 유지한다.
+        if (!holdSit && isSitting && !HasStandUpHeadroom())
+        {
+            isSitting = true;
+        }
+        else
+        {
+            isSitting = holdSit;
+        }
+
         float lerpSpeed = sitTransitionSpeed * Time.deltaTime;
 
         if (cam != null)
@@ -207,6 +219,47 @@ public class Player_Ctrl : MonoBehaviour
         capsuleCollider.center = Vector3.Lerp(capsuleCollider.center, targetCenter, lerpSpeed);
 
         sitSpeedRatio = isSitting ? sitSpeedMultiplier : 1f;
+    }
+
+    // 현재 앉은 콜라이더가 서있는 높이까지 늘어날 공간이 머리 위에 있는지 검사한다.
+    // 플레이어 자신(자식 포함)을 제외한 모든 충돌체를 장애물로 간주한다.
+    bool HasStandUpHeadroom()
+    {
+        if (capsuleCollider == null)
+        {
+            return true;
+        }
+
+        float growth = standColliderHeight - capsuleCollider.height; // 일어나면서 늘어나야 할 높이
+        if (growth <= 0.01f)
+        {
+            return true;
+        }
+
+        float radius = Mathf.Max(capsuleCollider.radius - standUpCheckSkin, 0.01f);
+        Vector3 worldCenter = transform.TransformPoint(capsuleCollider.center);
+        float halfSegment = Mathf.Max(capsuleCollider.height * 0.5f - capsuleCollider.radius, 0f);
+        Vector3 up = transform.up;
+        Vector3 sphereTop = worldCenter + up * halfSegment;
+        Vector3 sphereBottom = worldCenter - up * halfSegment;
+
+        RaycastHit[] hits = Physics.CapsuleCastAll(
+            sphereBottom, sphereTop, radius, up, growth, ~0, QueryTriggerInteraction.Ignore);
+
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider == capsuleCollider)
+            {
+                continue;
+            }
+            if (hit.collider.transform.IsChildOf(transform))
+            {
+                continue;
+            }
+            return false; // 플레이어가 아닌 장애물 감지 → 일어날 수 없음
+        }
+
+        return true;
     }
 
     Camera ResolveCamera()

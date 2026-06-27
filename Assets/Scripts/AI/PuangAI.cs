@@ -10,6 +10,8 @@
 //         인스펙터에서 wanderRadius(배회 반경), 속도/감지 파라미터, occlusionMask 를 설정한다. player 는
 //         미할당 시 태그 "Player" 로 자동 탐색한다. 플래시 스턴은 CameraSystem 이 IStunTarget 으로 자동 호출한다.
 //         외부는 OnCaughtPlayer / OnStateChanged 를 구독해 게임오버·애니메이션·사운드를 연결한다.
+//         4구역 최종 탈출: BeginFinalAmbush(pos) 로 텔레포트+잠복 시작(첫 시야 포착 시 전지적 추적,
+//         추적 포기/청각 무시, 플래시 스턴만 유효), FreezeFinal() 로 엔딩 시 영구 정지시킨다.
 
 using System;
 using UnityEngine;
@@ -18,7 +20,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class PuangAI : MonoBehaviour, IStunTarget
 {
-    public enum PuangState { Idle, Wander, Curious, Chase, Stun }
+    // Ambush/Frozen 은 4구역 최종 탈출 전용 상태(BeginFinalAmbush / FreezeFinal 로 진입).
+    public enum PuangState { Idle, Wander, Curious, Chase, Stun, Ambush, Frozen }
 
     [Header("참조")]
     [Tooltip("추적 대상 플레이어. 미할당 시 태그 \"Player\" 로 자동 탐색")]
@@ -112,6 +115,7 @@ public class PuangAI : MonoBehaviour, IStunTarget
     private float _loseSightTimer;     // 시야 상실 누적 시간
     private float _invincibleUntil;    // 이 시각 전까지 재스턴 무시
     private bool _hasCaught;           // 잡힘 1회 발행 가드
+    private bool _finalMode;           // 4구역 최종 추적 모드: 켜지면 추적 포기/감각 로직 무시(전지적 추적)
 
     // 플레이어 속도 측정
     private Vector3 _prevPlayerPos;
@@ -160,7 +164,31 @@ public class PuangAI : MonoBehaviour, IStunTarget
             case PuangState.Curious: TickCurious(); break;
             case PuangState.Chase:   TickChase();   break;
             case PuangState.Stun:    TickStun();    break;
+            case PuangState.Ambush:  TickAmbush();  break;
+            case PuangState.Frozen:  TickFrozen();  break;
         }
+    }
+
+    // ── 4구역 최종 탈출 API ──────────────────────────────────
+    /// <summary>4구역 진입 시 호출. 지정 지점으로 텔레포트 후 Ambush(완전 정지)로 대기한다.</summary>
+    public void BeginFinalAmbush(Vector3 teleportPos)
+    {
+        _finalMode = true;
+        if (_agent != null && _agent.enabled && _agent.isOnNavMesh)
+            _agent.Warp(teleportPos);
+        else
+            transform.position = teleportPos;
+        EnterAmbush();
+        Debug.Log($"[PuangAI] Final ambush started at {teleportPos}.", this);
+    }
+
+    /// <summary>도어락 해제(엔딩 트리거) 시 호출. 모든 동작을 멈추고 영구 정지한다.</summary>
+    public void FreezeFinal()
+    {
+        SetState(PuangState.Frozen);
+        StopAgent();
+        StopPhysics();
+        Debug.Log("[PuangAI] Frozen for ending.", this);
     }
 
     // ── 감각(공통) ──────────────────────────────────────────
@@ -203,6 +231,7 @@ public class PuangAI : MonoBehaviour, IStunTarget
     // 플래시 소리(static 이벤트): 감지 반경 안이면 그 위치를 소음원으로 Curious.
     private void OnFlashHeard(Vector3 pos, float range)
     {
+        if (_finalMode) return; // 최종 모드에서는 플래시 소리로 Curious 전환하지 않음(스턴은 OnFlashStunned 가 별도 처리)
         if (_state == PuangState.Stun) return;
         if (Vector3.Distance(transform.position, pos) > flashHearRadius) return;
         _lastHeardPos = pos;
@@ -301,7 +330,15 @@ public class PuangAI : MonoBehaviour, IStunTarget
 
     private void TickChase()
     {
-        if (player == null) { EnterIdle(); return; }
+        if (player == null) { if (!_finalMode) EnterIdle(); return; }
+
+        // 최종 모드: 시야/청각 무관하게 항상 플레이어 위치로 직행, 추적 포기 없음.
+        if (_finalMode)
+        {
+            _agent.SetDestination(player.position);
+            TryCatch();
+            return;
+        }
 
         bool sees = CanSeePlayer();
         if (sees)
@@ -309,12 +346,7 @@ public class PuangAI : MonoBehaviour, IStunTarget
             _lastSeenPos = player.position;
             _loseSightTimer = 0f;
             _agent.SetDestination(player.position);
-
-            if (!_hasCaught && Vector3.Distance(transform.position, player.position) <= catchDistance)
-            {
-                _hasCaught = true;
-                OnCaughtPlayer?.Invoke();
-            }
+            TryCatch();
         }
         else
         {
@@ -323,6 +355,42 @@ public class PuangAI : MonoBehaviour, IStunTarget
             _loseSightTimer += Time.deltaTime;
             if (_loseSightTimer >= loseSightTime) EnterIdle();
         }
+    }
+
+    // catchDistance 이내 접근 시 잡힘 1회 발행.
+    private void TryCatch()
+    {
+        if (_hasCaught) return;
+        if (Vector3.Distance(transform.position, player.position) <= catchDistance)
+        {
+            _hasCaught = true;
+            OnCaughtPlayer?.Invoke();
+        }
+    }
+
+    // ── Ambush (최종 잠복 대기) ──────────────────────────────
+    private void EnterAmbush()
+    {
+        SetState(PuangState.Ambush);
+        StopAgent();
+        StopPhysics();
+    }
+
+    // 완전 정지 대기. 플레이어가 시야에 처음 걸리는 순간 Chase(전지적 추적)로 전환.
+    private void TickAmbush()
+    {
+        if (player == null) return;
+        if (CanSeePlayer())
+        {
+            _lastSeenPos = player.position;
+            EnterChase();
+        }
+    }
+
+    // ── Frozen (엔딩 영구 정지) ──────────────────────────────
+    private void TickFrozen()
+    {
+        StopPhysics();
     }
 
     // ── Stun (IStunTarget) ──────────────────────────────────

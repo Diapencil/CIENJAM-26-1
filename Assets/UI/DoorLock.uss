@@ -1,0 +1,100 @@
+/*
+    DoorLock.uss
+    Feature: Styles the door-lock keypad panel (4-digit password input).
+*/
+
+.lock-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+.lock-panel {
+    width: 300px;
+    padding: 22px;
+    background-color: rgb(18, 18, 22);
+    border-width: 1px;
+    border-color: rgb(85, 85, 92);
+    border-radius: 8px;
+    align-items: center;
+}
+
+.lock-title {
+    font-size: 20px;
+    -unity-font-style: bold;
+    color: rgb(200, 200, 208);
+    -unity-text-align: middle-center;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+}
+
+.lock-display {
+    width: 256px;
+    height: 52px;
+    margin-bottom: 16px;
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgb(120, 230, 150);
+    -unity-text-align: middle-center;
+    background-color: rgb(10, 12, 14);
+    border-width: 1px;
+    border-color: rgb(60, 64, 70);
+    border-radius: 4px;
+    letter-spacing: 8px;
+}
+
+.lock-display-wrong {
+    color: rgb(235, 90, 90);
+    border-color: rgb(180, 70, 70);
+}
+
+.lock-grid {
+    align-items: center;
+}
+
+.lock-row {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.lock-key {
+    width: 78px;
+    height: 60px;
+    margin: 4px;
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: rgb(240, 240, 244);
+    background-color: rgb(54, 58, 66);
+    border-width: 1px;
+    border-color: rgb(118, 123, 132);
+    border-radius: 4px;
+}
+
+.lock-key:hover {
+    background-color: rgb(75, 84, 98);
+    border-color: rgb(220, 228, 238);
+}
+
+.lock-key:active {
+    background-color: rgb(35, 38, 45);
+}
+
+.lock-key-action {
+    background-color: rgb(48, 50, 58);
+    color: rgb(210, 210, 216);
+}
+
+.lock-key-confirm {
+    background-color: rgb(52, 84, 60);
+    border-color: rgb(102, 162, 116);
+}
+
+.lock-key-confirm:hover {
+    background-color: rgb(62, 104, 72);
+    border-color: rgb(146, 220, 162);
+}

@@ -1,0 +1,79 @@
+/*
+    ClearPanel.uss
+    Feature: Styles the clear/escape result panel.
+*/
+
+.clear-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(0, 0, 0);
+}
+
+.clear-panel {
+    width: 420px;
+    padding: 28px;
+    background-color: rgb(18, 20, 24);
+    border-width: 1px;
+    border-color: rgb(85, 88, 92);
+    border-radius: 6px;
+}
+
+.clear-title {
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(235, 240, 245);
+    -unity-text-align: middle-center;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+}
+
+.clear-message {
+    font-size: 16px;
+    color: rgb(185, 190, 198);
+    -unity-text-align: middle-center;
+    margin-bottom: 22px;
+    white-space: normal;
+}
+
+.clear-actions {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.clear-button {
+    min-width: 128px;
+    height: 42px;
+    margin-left: 6px;
+    margin-right: 6px;
+    font-size: 17px;
+    -unity-font-style: bold;
+    color: rgb(240, 240, 244);
+    background-color: rgb(54, 58, 66);
+    border-width: 1px;
+    border-color: rgb(118, 123, 132);
+    border-radius: 4px;
+}
+
+.clear-button-primary {
+    background-color: rgb(52, 72, 92);
+    border-color: rgb(102, 142, 182);
+}
+
+.clear-button:hover {
+    background-color: rgb(75, 84, 98);
+    border-color: rgb(220, 228, 238);
+}
+
+.clear-button-primary:hover {
+    background-color: rgb(62, 92, 122);
+    border-color: rgb(146, 196, 238);
+}
+
+.clear-button:active {
+    background-color: rgb(35, 38, 45);
+}

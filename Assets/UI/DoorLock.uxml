@@ -1,0 +1,31 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/DoorLock.uss#DoorLock"/>
+    <ui:VisualElement name="lock-root" class="lock-root" style="display: none;">
+        <ui:VisualElement class="lock-panel">
+            <ui:Label text="DOOR LOCK" class="lock-title"/>
+            <ui:Label name="lock-display" text="" class="lock-display"/>
+            <ui:VisualElement class="lock-grid">
+                <ui:VisualElement class="lock-row">
+                    <ui:Button name="lock-key-1" text="1" class="lock-key"/>
+                    <ui:Button name="lock-key-2" text="2" class="lock-key"/>
+                    <ui:Button name="lock-key-3" text="3" class="lock-key"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="lock-row">
+                    <ui:Button name="lock-key-4" text="4" class="lock-key"/>
+                    <ui:Button name="lock-key-5" text="5" class="lock-key"/>
+                    <ui:Button name="lock-key-6" text="6" class="lock-key"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="lock-row">
+                    <ui:Button name="lock-key-7" text="7" class="lock-key"/>
+                    <ui:Button name="lock-key-8" text="8" class="lock-key"/>
+                    <ui:Button name="lock-key-9" text="9" class="lock-key"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="lock-row">
+                    <ui:Button name="lock-delete" text="←" class="lock-key lock-key-action"/>
+                    <ui:Button name="lock-key-0" text="0" class="lock-key"/>
+                    <ui:Button name="lock-confirm" text="OK" class="lock-key lock-key-confirm"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
