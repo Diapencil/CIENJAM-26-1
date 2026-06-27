@@ -73,6 +73,9 @@ public class AudioManager : Singleton<AudioManager>, ISceneEventListener
     new void Awake()
     {
         base.Awake();
+        if (AudioManager.Instance != this)
+            return;
+
         _poolParent = transform;
 
         LoadAllSounds();

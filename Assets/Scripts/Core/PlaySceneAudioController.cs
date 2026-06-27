@@ -4,9 +4,11 @@ using UnityEngine;
 // Play 씬 사운드 연출을 연결한다. 클립은 AudioManager/ResourceManager가 Resources에서 이름으로 찾는다.
 public class PlaySceneAudioController : MonoBehaviour
 {
+    private static PlaySceneAudioController _activeController;
+
     [Header("BGM")]
     [SerializeField] private string bgmName = "게임 배경음악";
-    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.135f;
+    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.0675f;
 
     [Header("Player Footsteps")]
     [SerializeField] private Transform player;
@@ -65,9 +67,24 @@ public class PlaySceneAudioController : MonoBehaviour
     private float _lastHorrorKickTime = -999f;
     private int _footstepLoopId = -1;
     private int _lastFootstepIndex = -1;
+    private bool _ownsAudio;
+
+    private void Awake()
+    {
+        if (_activeController != null && _activeController != this)
+        {
+            enabled = false;
+            return;
+        }
+
+        _activeController = this;
+        _ownsAudio = true;
+    }
 
     private void Start()
     {
+        if (!_ownsAudio) return;
+
         _audio = AudioManager.Instance;
         BindReferences();
         SubscribeGameFlow();
@@ -79,12 +96,16 @@ public class PlaySceneAudioController : MonoBehaviour
 
     private void Update()
     {
+        if (!_ownsAudio) return;
+
         UpdateFootsteps();
         UpdatePuangAmbiences();
     }
 
     private void OnDisable()
     {
+        if (!_ownsAudio) return;
+
         StopFootstepLoop();
         StopPuangAmbiences();
         StopSceneBGM();
@@ -92,6 +113,12 @@ public class PlaySceneAudioController : MonoBehaviour
 
         if (_gameManager != null)
             _gameManager.OnPhaseChanged -= OnPhaseChanged;
+    }
+
+    private void OnDestroy()
+    {
+        if (_activeController == this)
+            _activeController = null;
     }
 
     private void BindReferences()
@@ -124,7 +151,8 @@ public class PlaySceneAudioController : MonoBehaviour
     {
         if (_audio == null) return;
 
-        _audio.PlayBGM(bgmName, bgmVolume, true);
+        _audio.BGMVolume = bgmVolume;
+        _audio.PlayBGM(bgmName, 1f, true);
         StartPuangAmbiences();
     }
 
@@ -181,6 +209,7 @@ public class PlaySceneAudioController : MonoBehaviour
         if (Time.time < state.nextAmbientPlayTime)
             return;
 
+        StopPuangAmbient(state);
         state.ambientId = _audio.PlaySound(puangAmbientName, puang.transform, GetPuangAmbientVolume(state.currentState));
 
         var clip = ResourceManager.Instance.Get<AudioClip>(puangAmbientName);
@@ -298,7 +327,11 @@ public class PlaySceneAudioController : MonoBehaviour
     private void PlayPuangStun(PuangAI puang, PuangAmbientState state)
     {
         StopPuangAmbient(state);
+        StopPuangSound(state.stunId);
+        StopPuangSound(state.stunBoostId);
         StopPuangSound(state.stunReleaseId);
+        state.stunId = -1;
+        state.stunBoostId = -1;
         state.stunReleaseId = -1;
         state.stunReleaseOnlyUntil = 0f;
 
@@ -311,8 +344,10 @@ public class PlaySceneAudioController : MonoBehaviour
     {
         StopPuangSound(state.stunId);
         StopPuangSound(state.stunBoostId);
+        StopPuangSound(state.stunReleaseId);
         state.stunId = -1;
         state.stunBoostId = -1;
+        state.stunReleaseId = -1;
 
         if (!IsPuangAudible(puang))
         {
