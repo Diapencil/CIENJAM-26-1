@@ -406,7 +406,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlaySceneAudioController
   bgmName: "\uAC8C\uC784 \uBC30\uACBD\uC74C\uC545"
-  bgmVolume: 0.0675
+  bgmVolume: 0.1
   player: {fileID: 0}
   continuousFootstepName: "\uBC1C\uC18C\uB9AC \uC5F0\uC18D"
   footstepNames:
@@ -440,3 +440,5 @@ MonoBehaviour:
   horrorKickName: "\uD638\uB7EC \uC0AC\uC6B4\uB4DC \uD0A5"
   horrorKickVolume: 0.78
   horrorKickCooldown: 3
+  cameraShotName: "\uCE74\uBA54\uB77C"
+  cameraShotVolume: 1

@@ -8,7 +8,7 @@ public class PlaySceneAudioController : MonoBehaviour
 
     [Header("BGM")]
     [SerializeField] private string bgmName = "게임 배경음악";
-    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.0675f;
+    [SerializeField, Range(0f, 1f)] private float bgmVolume = 0.1f;
 
     [Header("Player Footsteps")]
     [SerializeField] private Transform player;
@@ -44,6 +44,10 @@ public class PlaySceneAudioController : MonoBehaviour
     [SerializeField] private string horrorKickName = "호러 사운드 킥";
     [SerializeField, Range(0f, 1f)] private float horrorKickVolume = 0.78f;
     [SerializeField] private float horrorKickCooldown = 3f;
+
+    [Header("Camera")]
+    [SerializeField] private string cameraShotName = "카메라";
+    [SerializeField, Range(0f, 1f)] private float cameraShotVolume = 1f;
 
     private class PuangAmbientState
     {
@@ -88,6 +92,7 @@ public class PlaySceneAudioController : MonoBehaviour
         _audio = AudioManager.Instance;
         BindReferences();
         SubscribeGameFlow();
+        SubscribeCameraShot();
         StartSceneAudio();
 
         if (player != null)
@@ -113,6 +118,8 @@ public class PlaySceneAudioController : MonoBehaviour
 
         if (_gameManager != null)
             _gameManager.OnPhaseChanged -= OnPhaseChanged;
+
+        CameraSystem.OnFlashFired -= OnCameraShot;
     }
 
     private void OnDestroy()
@@ -147,12 +154,17 @@ public class PlaySceneAudioController : MonoBehaviour
             _gameManager.OnPhaseChanged += OnPhaseChanged;
     }
 
+    private void SubscribeCameraShot()
+    {
+        CameraSystem.OnFlashFired -= OnCameraShot;
+        CameraSystem.OnFlashFired += OnCameraShot;
+    }
+
     private void StartSceneAudio()
     {
         if (_audio == null) return;
 
-        _audio.BGMVolume = bgmVolume;
-        _audio.PlayBGM(bgmName, 1f, true);
+        _audio.PlayBGM(bgmName, bgmVolume, true);
         StartPuangAmbiences();
     }
 
@@ -390,6 +402,14 @@ public class PlaySceneAudioController : MonoBehaviour
     {
         if (phase is GamePhase.Ending or GamePhase.Cleared)
             StopFootstepLoop();
+    }
+
+    private void OnCameraShot(Vector3 flashPosition, float range)
+    {
+        if (_audio == null || string.IsNullOrEmpty(cameraShotName))
+            return;
+
+        _audio.PlayGlobalSound(cameraShotName, cameraShotVolume);
     }
 
     private void StopPuangAmbiences()
