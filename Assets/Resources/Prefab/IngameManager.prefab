@@ -444,7 +444,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d093c4fc43d55014997724140816cc82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonologueManager
-  view: {fileID: 0}
+  view: {fileID: 6937495176271876201}
   defaultHoldSeconds: 2
   holdSecondsPerCharacter: 0.035
   queueByDefault: 1
