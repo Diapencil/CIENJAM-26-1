@@ -54,6 +54,9 @@ public class GameManager : DomainSingleton<GameManager>
     /// <summary>현재 게임 단계. (DomainSingleton.Current 와 구분해 CurrentPhase)</summary>
     public GamePhase CurrentPhase { get; private set; } = GamePhase.Intro;
 
+    /// <summary>사망 누적 횟수. 씬 리로드(RestartGame)와 무관하게 유지되도록 static.</summary>
+    public static int DeathCount { get; private set; }
+
     /// <summary>Playing 진입 후 경과 시간(초). 표시·연출용(시간초과 패널티 없음).</summary>
     public float ElapsedTime { get; private set; }
 
@@ -134,8 +137,9 @@ public class GameManager : DomainSingleton<GameManager>
         }
 
         _timing = false;
+        DeathCount++;
         var context = new DeathContext(reason, source);
-        Debug.Log($"[GameManager] Player death requested. reason='{reason}' source='{source}' previousPhase={CurrentPhase}", this);
+        Debug.Log($"[GameManager] Player death requested. reason='{reason}' source='{source}' previousPhase={CurrentPhase} deathCount={DeathCount}", this);
         SetPhase(GamePhase.Dead);
         OnPlayerDied?.Invoke(context);
     }
