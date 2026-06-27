@@ -538,7 +538,9 @@ MonoBehaviour:
   chargeHoldTime: 2
   shutterCooldown: 2
   flashLight: {fileID: 1650580550510843555}
-  flashLightDuration: 0.08
+  firstFlashDuration: 0.3
+  flashGapDuration: 0.2
+  secondFlashDuration: 0.05
 --- !u!1 &6299566778872590811
 GameObject:
   m_ObjectHideFlags: 0

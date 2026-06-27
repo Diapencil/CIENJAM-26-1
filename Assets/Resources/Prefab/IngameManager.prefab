@@ -338,6 +338,7 @@ GameObject:
   - component: {fileID: 839924505287711443}
   - component: {fileID: 3646688569613670011}
   - component: {fileID: 1529086747854385021}
+  - component: {fileID: 3123439764214488011}
   m_Layer: 0
   m_Name: IngameManager
   m_TagString: Untagged
@@ -392,3 +393,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8be374224ceae7d449b18f4ff131b2ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractionManager
+--- !u!114 &3123439764214488011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8902714231174670366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b63b0ee2d7f4b9e9f3a5e167ee03745, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlaySceneAudioController
+  bgmName: "\uAC8C\uC784 \uBC30\uACBD\uC74C\uC545"
+  bgmVolume: 0.7
+  player: {fileID: 0}
+  continuousFootstepName: "\uBC1C\uC18C\uB9AC \uC5F0\uC18D"
+  footstepNames:
+  - "\uBC1C\uC18C\uB9AC1"
+  - "\uBC1C\uC18C\uB9AC2"
+  - "\uBC1C\uC18C\uB9AC3"
+  - "\uBC1C\uC18C\uB9AC4"
+  - "\uBC1C\uC18C\uB9AC5"
+  - "\uBC1C\uC18C\uB9AC6"
+  - "\uBC1C\uC18C\uB9AC7"
+  - "\uBC1C\uC18C\uB9AC8"
+  moveThreshold: 0.15
+  runThreshold: 7
+  walkStepInterval: 0.46
+  runStepInterval: 0.28
+  footstepVolume: 0.58
+  continuousWalkVolume: 0.18
+  continuousRunVolume: 0.3
+  puangs: []
+  puangAmbientName: "\uD478\uC559\uC774 ambient sound"
+  puangStunReleaseName: "\uD478\uC559\uC774 ambient sound 2"
+  puangStunName: "\uD478\uC559\uC774 \uC2A4\uD134"
+  puangAudibleRadius: 15
+  puangIdleAmbientVolume: 0.5775
+  puangCuriousAmbientVolume: 0.7
+  puangChaseAmbientVolume: 0.7
+  puangStunVolume: 1
+  puangStunBoostVolume: 0.5
+  puangStunReleaseVolume: 0.7
+  puangStunSoundDelay: 0.3
+  puangAmbientGap: 2
+  horrorKickName: 
+  horrorKickVolume: 0.78
+  horrorKickCooldown: 3
+  cameraShotName: "\uCE74\uBA54\uB77C"
+  cameraShotVolume: 1
