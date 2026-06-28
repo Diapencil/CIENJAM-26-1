@@ -29,7 +29,7 @@ public class Player_Ctrl : MonoBehaviour
     
     [Header("Stamina")]
     public float stamina;
-    [UnityEngine.Range(1, 100)] public float maxStamina = 100f;                  // 최대 스태미너
+    [UnityEngine.Range(1, 100)] public float maxStamina = 75f;                  // 최대 스태미너
     [UnityEngine.Range(1, 10)] public float staminaDrainPerSecond = 50f;       // 달리기 중 초당 스태미너 감소량
     [UnityEngine.Range(1, 10)] public float staminaRecoveryDelay = 2f;        // 달리기 종료 후 몇 초 뒤 회복 시작
     [UnityEngine.Range(1, 10)] public float staminaRecoveryPerSecond = 10f;    // 초당 스태미너 회복량

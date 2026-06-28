@@ -57,8 +57,8 @@ public class GameManager : DomainSingleton<GameManager>
     [Header("NavMesh 리베이크")]
     [Tooltip("리베이크 대상 NavMeshSurface. 비우면 런타임에 씬에서 자동 검색")]
     [SerializeField] private NavMeshSurface[] navMeshSurfaces;
-    [Tooltip("문 열림 트윈이 끝난 뒤 리베이크하도록 주는 지연(초). Door.duration 보다 약간 길게")]
-    [SerializeField, Min(0f)] private float navMeshRebakeDelay = 1.1f;
+    [Tooltip("리베이크 전 안전 마진(초). 호출측에서 이미 문 트윈 종료를 보장하므로 0~소량이면 충분")]
+    [SerializeField, Min(0f)] private float navMeshRebakeDelay = 0.05f;
 
     // ── 상태 ───────────────────────────────────────────────
     /// <summary>현재 게임 단계. (DomainSingleton.Current 와 구분해 CurrentPhase)</summary>

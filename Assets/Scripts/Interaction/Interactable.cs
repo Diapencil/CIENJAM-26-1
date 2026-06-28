@@ -25,6 +25,8 @@ public class Interactable : MonoBehaviour
     [SerializeField] Transform promptAnchor;
     [SerializeField] Vector3 promptWorldOffset = new Vector3(0f, 1.8f, 0f);
     [SerializeField] string promptText = "F";
+    [Tooltip("[F : 줍기] 형태에서 ': ' 뒤에 표시할 동작 라벨")]
+    [SerializeField] string promptLabel = "상호작용";
 
     [Header("Outline")]
     [SerializeField] bool disableHighlightOnInteract;
@@ -37,6 +39,9 @@ public class Interactable : MonoBehaviour
 
     [Header("Events")]
     [SerializeField] UnityEvent onInteract;
+    
+    [Header("Sounds")]
+    [SerializeField] string soundName;
 
     bool hasInteracted;
 
@@ -44,6 +49,8 @@ public class Interactable : MonoBehaviour
     public KeyCode InteractionKey => interactionKey;
     public float InteractionRange => interactionRange;
     public string PromptText => string.IsNullOrWhiteSpace(promptText) ? interactionKey.ToString() : promptText;
+    public string KeyLabel => interactionKey.ToString();
+    public string PromptLabel => promptLabel;
     public bool CanShowPrompt => isActiveAndEnabled
                                  && (!hasInteracted || !hidePromptAfterInteractOnce);
     public bool CanInteract => isActiveAndEnabled
@@ -88,6 +95,8 @@ public class Interactable : MonoBehaviour
 
         if (interactOnce)
             hasInteracted = true;
+        
+        AudioManager.Instance.PlaySound(soundName, transform, 1,1);
     }
 
     void PlayMonologue()

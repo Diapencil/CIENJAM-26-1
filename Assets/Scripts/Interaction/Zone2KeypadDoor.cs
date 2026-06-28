@@ -51,19 +51,27 @@ public class Zone2KeypadDoor : MonoBehaviour
         }
 
         _opened = true;
-
-        if (door != null)
-            door.Open();
-        else
-            Debug.LogWarning("[Zone2KeypadDoor] Door reference is missing. Progress will unlock, but no door animation will play.", this);
+        AudioManager.Instance.PlaySound("거대한 게이트 열림", transform, 1, 1);
 
         ExpandAccess();
 
-        if (unlockGate1OnOpen)
-            GameManager.Current.UnlockGate1();
+        // NavMesh 리베이크는 문 트윈이 완전히 끝난 뒤 실행해야 문 위치에서 메쉬가 끊기지 않는다.
+        if (door != null)
+            door.Open(OnDoorOpened);
+        else
+        {
+            Debug.LogWarning("[Zone2KeypadDoor] Door reference is missing. Progress will unlock, but no door animation will play.", this);
+            OnDoorOpened();
+        }
 
         ShowMessage(openedMessage);
         Debug.Log("[Zone2KeypadDoor] Door opened with keypad. Zone access expanded.", this);
+    }
+
+    private void OnDoorOpened()
+    {
+        if (unlockGate1OnOpen && GameManager.Current != null)
+            GameManager.Current.UnlockGate1();
     }
 
     private void ExpandAccess()
