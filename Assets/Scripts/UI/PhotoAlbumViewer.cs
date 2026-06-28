@@ -50,6 +50,7 @@ public class PhotoAlbumViewer : MonoBehaviour
         }
 
         CursorStateController.Release(this);
+        CameraLookLock.Release(this);
     }
 
     private IEnumerator BindWhenReady()
@@ -245,10 +246,12 @@ public class PhotoAlbumViewer : MonoBehaviour
         if (albumVisible)
         {
             CursorStateController.RequestUnlocked(this);
+            CameraLookLock.RequestLocked(this);
         }
         else
         {
             CursorStateController.Release(this);
+            CameraLookLock.Release(this);
         }
     }
 }

@@ -165,7 +165,8 @@ public class DeathSequenceController : MonoBehaviour
         player.targetTexture = renderTexture;
         player.isLooping = false;
         player.playOnAwake = false;
-        player.waitForFirstFrame = true;
+        // waitForFirstFrame=true이면 첫 프레임 표시를 기다리다 RenderTexture 모드에서 stall(frame 0 정지 후 즉시 종료)하므로 끈다.
+        player.waitForFirstFrame = false;
 
         Debug.Log($"[DeathSequenceController] Death video prepare started. clip='{player.clip.name}' size={width}x{height}", player);
         player.Prepare();
@@ -194,16 +195,6 @@ public class DeathSequenceController : MonoBehaviour
         Debug.Log("[DeathSequenceController] Death video playback started.", player);
         player.Play();
         yield return null;
-
-        // 진단: 표시 요소가 실제로 레이아웃/패널에 올라갔는지 확인
-        if (videoElement != null)
-        {
-            var rs = videoElement.resolvedStyle;
-            Debug.Log($"[DeathSequenceController][diag] death-video display={rs.display} visibility={rs.visibility} " +
-                      $"w={rs.width:0} h={rs.height:0} panel={(videoElement.panel != null)} " +
-                      $"hasRT={(rs.backgroundImage.renderTexture != null)} " +
-                      $"rootDisplay={(videoElement.parent != null ? videoElement.parent.resolvedStyle.display.ToString() : "null")}", this);
-        }
 
         while (player != null && player.isPlaying)
         {

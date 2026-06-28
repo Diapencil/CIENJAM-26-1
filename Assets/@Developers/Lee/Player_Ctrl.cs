@@ -107,6 +107,8 @@ public class Player_Ctrl : MonoBehaviour
             return;
         }
 
+        if (CameraLookLock.IsLocked) return; // UI(도어락/앨범 등) 표시 중 시점 회전 차단
+
         float mouseX = Input.GetAxisRaw("Mouse X") * mouseSpeed;
         float mouseY = Input.GetAxisRaw("Mouse Y") * mouseSpeed;
 

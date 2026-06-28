@@ -51,6 +51,7 @@ public class DoorLockPanelController : MonoBehaviour
     {
         UnwireButtons();
         CursorStateController.Release(this);
+        CameraLookLock.Release(this);
     }
 
     private void Bind()
@@ -123,6 +124,7 @@ public class DoorLockPanelController : MonoBehaviour
         }
 
         CursorStateController.RequestUnlocked(this);
+        CameraLookLock.RequestLocked(this);
         Debug.Log($"[DoorLockPanelController] Keypad opened. length={_correct.Length}", this);
     }
 
@@ -131,6 +133,7 @@ public class DoorLockPanelController : MonoBehaviour
         _open = false;
         if (_root != null) _root.style.display = DisplayStyle.None;
         CursorStateController.Release(this);
+        CameraLookLock.Release(this);
     }
 
     private void OnDigit(int digit)

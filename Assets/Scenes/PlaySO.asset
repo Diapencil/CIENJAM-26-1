@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d555577cfa8a484ea440d1eb18c696d, type: 3}
   m_Name: PlaySO
   m_EditorClassIdentifier: Assembly-CSharp::SceneSO
-  targetSceneName: Play
+  targetSceneName: MapPlay
   useLoadingScene: 1
   loadingSceneName: Loading
   leastHoldingDuration: 5
