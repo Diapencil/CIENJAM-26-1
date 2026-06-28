@@ -56,7 +56,12 @@ public class InteractionManager : MonoBehaviour
             return;
         }
 
-        InteractionPromptUI.Instance.Show(active.PromptText, GetScreenPosition(active));
+        float distance = Vector3.Distance(player.position, active.GetRangeCenter());
+        float normalized = active.InteractionRange > 0f
+            ? Mathf.Clamp01(distance / active.InteractionRange)
+            : 0f;
+
+        InteractionPromptUI.Instance.Show(active.KeyLabel, active.PromptLabel, GetScreenPosition(active), normalized);
 
         if (UserInput.Instance.GetKeyDown(active.InteractionKey))
             active.Interact();
