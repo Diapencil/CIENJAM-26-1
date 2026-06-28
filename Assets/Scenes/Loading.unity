@@ -369,8 +369,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadingScreenController
   randomMessages:
-  - "\uD478\uC6B0\uC544\uC544\uC559"
-  - "\uC870\uC2EC\uD574!"
+  - "\uB85C\uB529\uC911.."
   loadingImage: {fileID: 21300000, guid: c6b13de726cfe1b478eb9b93cf818f6f, type: 3}
 --- !u!114 &452959953
 MonoBehaviour:

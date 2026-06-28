@@ -15,7 +15,7 @@ MonoBehaviour:
   targetSceneName: Play
   useLoadingScene: 1
   loadingSceneName: Loading
-  leastHoldingDuration: 5
+  leastHoldingDuration: 3
   enterTransition: 1
   exitTransition: 2
   transitionDuration: 0.5

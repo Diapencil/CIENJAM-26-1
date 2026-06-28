@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e95e40d4619e44089baa8ed19be420, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartMenuController
-  startTargetScene: MapPlay
+  startTargetScene: Play
   optionsPanelAsset: {fileID: 9197481963319205126, guid: 799f913e34f797246a25805b77aafde3, type: 3}
   titlePulseInterval: 2
   buttonsRevealDelay: 1

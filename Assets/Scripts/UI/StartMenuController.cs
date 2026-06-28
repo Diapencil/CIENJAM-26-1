@@ -18,6 +18,10 @@ public class StartMenuController : MonoBehaviour
     [SerializeField] private float titlePulseInterval = 2f;
     [SerializeField] private float buttonsRevealDelay = 1f;
 
+    [Header("Title Music")]
+    [SerializeField] private string titleBgmName = "타이틀음악";
+    [SerializeField, Range(0f, 1f)] private float titleBgmVolume = 1f;
+
     private const string RootName = "start-root";
     private const string TitleLabelName = "title-label";
     private const string TitleGlowName = "title-glow";
@@ -40,6 +44,12 @@ public class StartMenuController : MonoBehaviour
     private Coroutine _buttonsRevealRoutine;
     private bool _revealed;
     private bool _starting;
+    private bool _titleBgmStarted;
+
+    private void Start()
+    {
+        PlayTitleBgm();
+    }
 
     private void OnEnable()
     {
@@ -89,6 +99,8 @@ public class StartMenuController : MonoBehaviour
         if (_startButton != null) _startButton.clicked -= OnStart;
         if (_optionButton != null) _optionButton.clicked -= OnOption;
         if (_exitButton != null) _exitButton.clicked -= OnExit;
+
+        StopTitleBgm();
 
         _optionsPanelRoot?.RemoveFromHierarchy();
         _optionsPanelRoot = null;
@@ -143,6 +155,7 @@ public class StartMenuController : MonoBehaviour
 
         _starting = true;
         SetButtonsEnabled(false);
+        StopTitleBgm();
         SceneController.Instance.LoadScene(startTargetScene);
     }
 
@@ -150,6 +163,8 @@ public class StartMenuController : MonoBehaviour
 
     private void OnExit()
     {
+        StopTitleBgm();
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -209,5 +224,31 @@ public class StartMenuController : MonoBehaviour
         _startButton?.SetEnabled(enabled);
         _optionButton?.SetEnabled(enabled);
         _exitButton?.SetEnabled(enabled);
+    }
+
+    private void PlayTitleBgm()
+    {
+        if (_titleBgmStarted || string.IsNullOrWhiteSpace(titleBgmName)) return;
+
+        AudioManager manager = FindAnyObjectByType<AudioManager>();
+        if (manager == null)
+        {
+            Debug.LogWarning("[StartMenuController] AudioManager is missing; title BGM cannot be played.", this);
+            return;
+        }
+
+        manager.PlayBGM(titleBgmName, titleBgmVolume, true);
+        _titleBgmStarted = true;
+    }
+
+    private void StopTitleBgm()
+    {
+        if (!_titleBgmStarted || string.IsNullOrWhiteSpace(titleBgmName)) return;
+
+        AudioManager manager = FindAnyObjectByType<AudioManager>();
+        if (manager != null)
+            manager.StopBGM(titleBgmName);
+
+        _titleBgmStarted = false;
     }
 }
