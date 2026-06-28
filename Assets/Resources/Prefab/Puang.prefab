@@ -532,20 +532,20 @@ MonoBehaviour:
   chaseSpeed: 2.5
   finalChaseSpeed: 3.5
   acceleration: 2
-  angularSpeed: 180
+  angularSpeed: 720
   idleWaitMin: 1
   idleWaitMax: 3
-  visionAngle: 120
-  visionRange: 6
+  visionAngle: 150
+  visionRange: 20
   occlusionMask:
     serializedVersion: 2
     m_Bits: 4294967295
   eye: {fileID: 0}
   moveEpsilon: 0.2
   runSpeedThreshold: 7
-  walkHearRadius: 3
-  runHearRadius: 7
-  flashHearRadius: 10
+  walkHearRadius: 20
+  runHearRadius: 40
+  flashHearRadius: 50
   curiousSearchRadius: 2
   curiousSearchTime: 3
   catchDistance: 1.5
