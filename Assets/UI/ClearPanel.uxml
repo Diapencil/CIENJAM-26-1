@@ -10,4 +10,5 @@
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="clear-video" class="clear-video" style="display: none;"/>
 </ui:UXML>
