@@ -37,6 +37,8 @@ public class PuangAI : MonoBehaviour, IStunTarget
     [SerializeField] private float wanderSpeed = 0.8f;
     [SerializeField] private float curiousSpeed = 1.2f;
     [SerializeField] private float chaseSpeed = 2.5f;
+    [Tooltip("최종 추적(4구역 Ambush→Chase) 전용 이동 속도(m/s). 일반 Chase 와 별도로 조절")]
+    [SerializeField] private float finalChaseSpeed = 3.5f;
     [Tooltip("가속도 (코너에서 잠깐 느려지는 효과)")]
     [SerializeField] private float acceleration = 2.0f;
     [Tooltip("회전 속도 (°/s)")]
@@ -323,7 +325,7 @@ public class PuangAI : MonoBehaviour, IStunTarget
     private void EnterChase()
     {
         SetState(PuangState.Chase);
-        ResumeAgent(chaseSpeed);
+        ResumeAgent(_finalMode ? finalChaseSpeed : chaseSpeed);
         _loseSightTimer = 0f;
         _hasCaught = false;
     }
@@ -376,15 +378,26 @@ public class PuangAI : MonoBehaviour, IStunTarget
         StopPhysics();
     }
 
-    // 완전 정지 대기. 플레이어가 시야에 처음 걸리는 순간 Chase(전지적 추적)로 전환.
+    // 완전 정지 대기(이동 없음). 신체는 항상 플레이어를 바라본다.
+    // 플레이어가 시야에 처음 걸리는 순간 Chase(전지적 추적)로 전환.
     private void TickAmbush()
     {
         if (player == null) return;
+        FacePlayer();
         if (CanSeePlayer())
         {
             _lastSeenPos = player.position;
             EnterChase();
         }
+    }
+
+    // 수평면 기준으로 신체를 플레이어 쪽으로 즉시 회전(제자리 대기 중 추적 연출).
+    private void FacePlayer()
+    {
+        Vector3 dir = player.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+        transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
     }
 
     // ── Frozen (엔딩 영구 정지) ──────────────────────────────

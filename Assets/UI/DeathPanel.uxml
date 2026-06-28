@@ -10,4 +10,5 @@
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="death-video" class="death-video" style="display: none;"/>
 </ui:UXML>

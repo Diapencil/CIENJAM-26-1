@@ -10,10 +10,14 @@
 //           GameManager.Current.UnlockGate1() / ObtainKey() / ...      // 퍼즐 측에서 진행 보고
 //           GameManager.Current.TriggerFinalEscape()                   // 최종 유도 성공 시 호출
 //           GameManager.Current.RestartGame() / ReturnToTitle()        // 흐름 제어
+//           GameManager.Current.RebakeNavMesh()                        // 문 열림 후 NavMesh 재베이크(통로 개방)
 //         로 접근한다. 퍼즐·푸앙이 측은 GameManager 를 수정 없이 GameManager.Current 로 호출한다.
 
 using System;
+using System.Collections;
+using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>인게임 전체 흐름 단계.</summary>
 public enum GamePhase
@@ -50,9 +54,18 @@ public class GameManager : DomainSingleton<GameManager>
     [Tooltip("Start 진입 시 자동으로 Playing 으로 전환할지 여부")]
     [SerializeField] private bool autoStartOnLoad = true;
 
+    [Header("NavMesh 리베이크")]
+    [Tooltip("리베이크 대상 NavMeshSurface. 비우면 런타임에 씬에서 자동 검색")]
+    [SerializeField] private NavMeshSurface[] navMeshSurfaces;
+    [Tooltip("문 열림 트윈이 끝난 뒤 리베이크하도록 주는 지연(초). Door.duration 보다 약간 길게")]
+    [SerializeField, Min(0f)] private float navMeshRebakeDelay = 1.1f;
+
     // ── 상태 ───────────────────────────────────────────────
     /// <summary>현재 게임 단계. (DomainSingleton.Current 와 구분해 CurrentPhase)</summary>
     public GamePhase CurrentPhase { get; private set; } = GamePhase.Intro;
+
+    /// <summary>사망 누적 횟수. 씬 리로드(RestartGame)와 무관하게 유지되도록 static.</summary>
+    public static int DeathCount { get; private set; }
 
     /// <summary>Playing 진입 후 경과 시간(초). 표시·연출용(시간초과 패널티 없음).</summary>
     public float ElapsedTime { get; private set; }
@@ -134,8 +147,9 @@ public class GameManager : DomainSingleton<GameManager>
         }
 
         _timing = false;
+        DeathCount++;
         var context = new DeathContext(reason, source);
-        Debug.Log($"[GameManager] Player death requested. reason='{reason}' source='{source}' previousPhase={CurrentPhase}", this);
+        Debug.Log($"[GameManager] Player death requested. reason='{reason}' source='{source}' previousPhase={CurrentPhase} deathCount={DeathCount}", this);
         SetPhase(GamePhase.Dead);
         OnPlayerDied?.Invoke(context);
     }
@@ -159,6 +173,7 @@ public class GameManager : DomainSingleton<GameManager>
         if (Gate1Unlocked) return;
         Gate1Unlocked = true;
         OnEscapeProgress?.Invoke(EscapeFlag.Gate1);
+        RebakeNavMesh("Gate1");
     }
 
     public void ObtainKeypad()
@@ -184,6 +199,58 @@ public class GameManager : DomainSingleton<GameManager>
         if (Gate2Unlocked) return;
         Gate2Unlocked = true;
         OnEscapeProgress?.Invoke(EscapeFlag.Gate2);
+        RebakeNavMesh("Gate2");
+    }
+
+    // ── NavMesh 리베이크 ─────────────────────────────────────
+    /// <summary>문 열림 후 NavMesh 를 다시 구워 열린 통로를 통행 가능하게 한다. (지연 후 비동기 리베이크)</summary>
+    public void RebakeNavMesh(string reason = null)
+    {
+        if (!isActiveAndEnabled)
+        {
+            Debug.LogWarning($"[GameManager] RebakeNavMesh skipped: GameManager inactive. reason='{reason}'", this);
+            return;
+        }
+
+        StartCoroutine(RebakeNavMeshRoutine(reason));
+    }
+
+    private IEnumerator RebakeNavMeshRoutine(string reason)
+    {
+        Debug.Log($"[GameManager] NavMesh rebake requested. reason='{reason}' delay={navMeshRebakeDelay:0.###}s", this);
+
+        if (navMeshRebakeDelay > 0f)
+            yield return new WaitForSeconds(navMeshRebakeDelay);
+
+        if (navMeshSurfaces == null || navMeshSurfaces.Length == 0)
+        {
+            navMeshSurfaces = FindObjectsByType<NavMeshSurface>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            Debug.Log($"[GameManager] NavMeshSurface auto-found: {navMeshSurfaces.Length} surface(s).", this);
+        }
+
+        if (navMeshSurfaces.Length == 0)
+        {
+            Debug.LogWarning($"[GameManager] NavMesh rebake aborted: no NavMeshSurface in scene. reason='{reason}'", this);
+            yield break;
+        }
+
+        foreach (NavMeshSurface surface in navMeshSurfaces)
+        {
+            if (surface == null) continue;
+
+            if (surface.navMeshData != null)
+            {
+                Debug.Log($"[GameManager] NavMesh rebake start (update). surface='{surface.name}' reason='{reason}'", surface);
+                yield return surface.UpdateNavMesh(surface.navMeshData);
+                Debug.Log($"[GameManager] NavMesh rebake done. surface='{surface.name}' reason='{reason}'", surface);
+            }
+            else
+            {
+                Debug.Log($"[GameManager] NavMesh build start (no existing data). surface='{surface.name}' reason='{reason}'", surface);
+                surface.BuildNavMesh();
+                Debug.Log($"[GameManager] NavMesh build done. surface='{surface.name}' reason='{reason}'", surface);
+            }
+        }
     }
 
     // ── 내부 ─────────────────────────────────────────────────

@@ -471,6 +471,9 @@ public class PlaySceneAudioController : MonoBehaviour
     {
         if (phase is GamePhase.Ending or GamePhase.Cleared)
             SetFootstepState(FootstepState.Stopped);
+
+        if (phase == GamePhase.Dead)
+            StopPuangAmbiences();   // 사망 시 푸앙이 상시/스턴 효과음 정지 + 재시작 방지
     }
 
     private void OnCameraShot(Vector3 flashPosition, float range)
