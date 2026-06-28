@@ -22,15 +22,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.82064
+      value: -4.8470583
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.065
+      value: -0.000015129509
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.16683
+      value: -53.6485
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
       propertyPath: m_LocalRotation.w
@@ -143,6 +143,22 @@ PrefabInstance:
     - target: {fileID: -5525422200589684099, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: -0.00000269077
+      objectReference: {fileID: 0}
+    - target: {fileID: -5151820500511012225, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
+      propertyPath: m_MotionVectors
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -5151820500511012225, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -5151820500511012225, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
+      propertyPath: m_ScaleInLightmap
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -5151820500511012225, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -4283751303043526218, guid: 08efe9cfbd5b4c546b0ff3cd29ab7043, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -507,9 +523,14 @@ MonoBehaviour:
   player: {fileID: 0}
   wanderRadius: 10
   wanderSampleTries: 8
+  wanderPlayerBiasDistance: 12
+  wanderPlayerBiasRadius: 8
+  wanderPlayerBiasMinDistance: 4
+  wanderPlayerBiasChance: 0.75
   wanderSpeed: 0.8
   curiousSpeed: 1.2
   chaseSpeed: 2.5
+  finalChaseSpeed: 3.5
   acceleration: 2
   angularSpeed: 180
   idleWaitMin: 1

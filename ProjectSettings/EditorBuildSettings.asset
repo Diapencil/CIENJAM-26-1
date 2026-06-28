@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Loading.unity
     guid: 55c3f6c73e078b7469050dcc98528d7b
   - enabled: 1
-    path: Assets/Scenes/Play.unity
+    path: Assets/Scenes/Play_Old.unity
     guid: 0269fc8e85df40e4e8a74a14c2c072a1
   - enabled: 1
     path: Assets/Scenes/MapPlay.unity
