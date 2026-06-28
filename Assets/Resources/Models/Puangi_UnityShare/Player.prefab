@@ -602,7 +602,7 @@ MonoBehaviour:
   runAccelerationTime: 1
   runDecelerationTime: 1
   stamina: 0
-  maxStamina: 100
+  maxStamina: 75
   staminaDrainPerSecond: 10
   staminaRecoveryDelay: 2
   staminaRecoveryPerSecond: 10
