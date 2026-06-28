@@ -40,9 +40,18 @@ public class Door : MonoBehaviour
 
     public void Open()
     {
-        if (isOpen) return;
+        Open(null);
+    }
+
+    public void Open(System.Action onComplete)
+    {
+        if (isOpen)
+        {
+            onComplete?.Invoke();
+            return;
+        }
         isOpen = true;
-        Play(endLocalPosition, endLocalRotation);
+        Play(endLocalPosition, endLocalRotation, onComplete);
     }
 
     public void Close()
@@ -58,13 +67,15 @@ public class Door : MonoBehaviour
         else Open();
     }
 
-    void Play(Vector3 targetPosition, Vector3 targetRotation)
+    void Play(Vector3 targetPosition, Vector3 targetRotation, System.Action onComplete = null)
     {
         sequence?.Kill();
         sequence = DOTween.Sequence();
         sequence.Join(transform.DOLocalMove(targetPosition, duration).SetEase(ease));
         sequence.Join(transform.DOLocalRotateQuaternion(Quaternion.Euler(targetRotation), duration).SetEase(ease));
         sequence.SetLink(gameObject);
+        if (onComplete != null)
+            sequence.OnComplete(() => onComplete());
     }
 
     void OnDestroy()

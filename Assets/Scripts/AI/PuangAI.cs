@@ -1,5 +1,5 @@
 // PuangAI.cs
-// 기능: 푸앙이의 적 AI. NavMeshAgent 기반으로 움직이며 5개 상태(Idle / Wander / Curious / Chase / Stun)
+// 기능: 푸앙이의 적 AI. NavMeshAgent 기반으로 움직이며 상태(Idle / Wander / Curious / Chase / Stun / Ambush / Frozen)
 //       FSM 으로 동작한다. 플레이어를 시야(전방 시야각·거리·장애물 차단)와 청각(발소리·플래시 소리)으로
 //       감지해 추적하며, 카메라 플래시에 피격되면 IStunTarget.OnFlashStunned 로 스턴된다.
 //       - 발소리: 플레이어 Transform 의 프레임당 이동량으로 속도를 측정해 정지/걷기/달리기를 분류하고,
@@ -32,6 +32,15 @@ public class PuangAI : MonoBehaviour, IStunTarget
     [SerializeField] private float wanderRadius = 10f;
     [Tooltip("랜덤 지점 샘플링 최대 시도 횟수")]
     [SerializeField] private int wanderSampleTries = 8;
+    [Tooltip("플레이어와 이 거리 이상 떨어지면 배회 목적지를 플레이어 주변으로 치우치게 함(m)")]
+    [SerializeField] private float wanderPlayerBiasDistance = 12f;
+    [Tooltip("플레이어 주변 bias 목적지의 최대 반경(m)")]
+    [SerializeField] private float wanderPlayerBiasRadius = 8f;
+    [Tooltip("플레이어 주변 bias 목적지의 최소 거리(m). 너무 가까운 목적지를 피함")]
+    [SerializeField] private float wanderPlayerBiasMinDistance = 4f;
+    [Tooltip("거리 조건을 만족했을 때 플레이어 주변 bias 를 사용할 확률(0~1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float wanderPlayerBiasChance = 0.75f;
 
     [Header("이동 속도 (m/s)")]
     [SerializeField] private float wanderSpeed = 0.8f;
@@ -270,24 +279,76 @@ public class PuangAI : MonoBehaviour, IStunTarget
         if (Arrived()) EnterIdle();
     }
 
-    // 현재 위치 기준 wanderRadius 안에서 NavMesh 위 이동 가능한 랜덤 지점을 찾는다.
+    // 플레이어와 너무 멀면 플레이어 주변 지점을 우선 샘플링하고, 실패하면 기존 랜덤 배회로 폴백한다.
+    // 푸앙이가 연결된 NavMesh 안에서 계속 멀어지는 누적 드리프트를 줄이기 위한 bias 다.
+    private bool TryGetRandomWanderPoint(out Vector3 result)
+    {
+        if (ShouldBiasWanderToPlayer() && TryGetPlayerBiasedWanderPoint(out result))
+            return true;
+
+        return TryGetReachableRandomPoint(transform.position, wanderRadius, wanderRadius, out result);
+    }
+
+    private bool ShouldBiasWanderToPlayer()
+    {
+        if (player == null) return false;
+        if (wanderPlayerBiasChance <= 0f) return false;
+        if (Vector3.Distance(transform.position, player.position) < wanderPlayerBiasDistance) return false;
+        return UnityEngine.Random.value <= wanderPlayerBiasChance;
+    }
+
+    private bool TryGetPlayerBiasedWanderPoint(out Vector3 result)
+    {
+        float maxRadius = Mathf.Max(0.1f, wanderPlayerBiasRadius);
+        float minRadius = Mathf.Clamp(wanderPlayerBiasMinDistance, 0f, maxRadius);
+
+        for (int i = 0; i < wanderSampleTries; i++)
+        {
+            Vector2 dir = UnityEngine.Random.insideUnitCircle;
+            if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
+            dir.Normalize();
+
+            float radius = UnityEngine.Random.Range(minRadius, maxRadius);
+            Vector3 candidate = player.position + new Vector3(dir.x, 0f, dir.y) * radius;
+            if (!TryGetReachableNavMeshPoint(candidate, maxRadius, out result)) continue;
+            return true;
+        }
+
+        result = transform.position;
+        return false;
+    }
+
     // SamplePosition 으로 NavMesh 위 점을 찾은 뒤, CalculatePath 로 현재 위치에서
     // 완전히 도달 가능한(PathComplete) 점만 채택한다(분리된 섬·막힌 구역 배제).
-    private bool TryGetRandomWanderPoint(out Vector3 result)
+    private bool TryGetReachableRandomPoint(Vector3 center, float randomRadius, float sampleRadius, out Vector3 result)
     {
         for (int i = 0; i < wanderSampleTries; i++)
         {
-            Vector3 candidate = transform.position + UnityEngine.Random.insideUnitSphere * wanderRadius;
-            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, wanderRadius, NavMesh.AllAreas))
-                continue;
-            // 현재 위치에서 후보까지 완전 경로가 있는지 확인(부분 경로/연결 안 됨 배제)
-            if (!_agent.CalculatePath(hit.position, _wanderPath)) continue;
-            if (_wanderPath.status != NavMeshPathStatus.PathComplete) continue;
-            result = hit.position;
-            return true;
+            Vector3 candidate = center + UnityEngine.Random.insideUnitSphere * randomRadius;
+            if (TryGetReachableNavMeshPoint(candidate, sampleRadius, out result)) return true;
         }
+
         result = transform.position;
         return false;
+    }
+
+    private bool TryGetReachableNavMeshPoint(Vector3 candidate, float sampleRadius, out Vector3 result)
+    {
+        if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, sampleRadius, NavMesh.AllAreas))
+        {
+            result = transform.position;
+            return false;
+        }
+
+        // 현재 위치에서 후보까지 완전 경로가 있는지 확인(부분 경로/연결 안 됨 배제)
+        if (!_agent.CalculatePath(hit.position, _wanderPath) || _wanderPath.status != NavMeshPathStatus.PathComplete)
+        {
+            result = transform.position;
+            return false;
+        }
+
+        result = hit.position;
+        return true;
     }
 
     // ── Curious ─────────────────────────────────────────────
@@ -352,7 +413,15 @@ public class PuangAI : MonoBehaviour, IStunTarget
         }
         else
         {
-            // 시야 상실 → 마지막 목격 위치로 이동, 일정 시간 후 포기
+            // 시야 상실 중에도 발소리가 들리면 추적 목적지를 최신 소음 위치로 갱신한다.
+            if (HearsFootstep())
+            {
+                _lastSeenPos = player.position;
+                _lastHeardPos = player.position;
+                _loseSightTimer = 0f;
+            }
+
+            // 시야 상실 → 마지막 목격/소음 위치로 이동, 일정 시간 후 포기
             _agent.SetDestination(_lastSeenPos);
             _loseSightTimer += Time.deltaTime;
             if (_loseSightTimer >= loseSightTime) EnterIdle();
@@ -409,6 +478,7 @@ public class PuangAI : MonoBehaviour, IStunTarget
     // ── Stun (IStunTarget) ──────────────────────────────────
     public void OnFlashStunned(float duration)
     {
+        if (_state == PuangState.Frozen) return; // 엔딩 정지 상태는 플래시로 깨지지 않음
         if (Time.time < _invincibleUntil) return; // 무적 프레임 중 재피격 무시
         SetState(PuangState.Stun);
         StopAgent();

@@ -39,6 +39,9 @@ public class Interactable : MonoBehaviour
 
     [Header("Events")]
     [SerializeField] UnityEvent onInteract;
+    
+    [Header("Sounds")]
+    [SerializeField] string soundName;
 
     bool hasInteracted;
 
@@ -92,6 +95,8 @@ public class Interactable : MonoBehaviour
 
         if (interactOnce)
             hasInteracted = true;
+        
+        AudioManager.Instance.PlaySound(soundName, transform, 1,1);
     }
 
     void PlayMonologue()
